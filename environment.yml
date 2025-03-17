@@ -1,0 +1,22 @@
+name: gadgetron
+channels:
+  - pytorch
+  - rapidsai
+dependencies:
+  #- pytorch==2.4.1 
+  #- torchvision 
+  #- torchaudio==2.4.1 
+  - pynvjitlink
+  #- pytorch-cuda 
+  - pip:
+    - junitparser==2.2.0
+    - cupy-cuda12x
+    - scikit-image
+    - nibabel
+    - numpy==1.23
+    - antspyx
+    - --extra-index-url https://download.pytorch.org/whl/cu124
+    - torch==2.4.0 
+    - torchvision==0.19.0 
+    - torchaudio==2.4.0  
+    - onnxruntime-gpu==1.18.1

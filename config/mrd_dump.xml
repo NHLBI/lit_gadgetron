@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+
+    <version>2</version>
+    <readers>
+    <reader>
+            <dll>gadgetron_core_readers</dll>
+            <classname>AcquisitionReader</classname>
+    </reader>
+    <reader>
+            <dll>gadgetron_core_readers</dll>
+            <classname>WaveformReader</classname>
+        </reader>
+    </readers>
+
+    <writers>
+        <writer>
+            <dll>gadgetron_core_writers</dll>
+            <classname>ImageWriter</classname>
+        </writer>
+    </writers>
+
+    <stream>
+
+        <!-- Noise prewhitening -->
+        <gadget>
+            <dll>gadgetron_mricore</dll>
+            <classname>NoiseAdjustGadget</classname>
+        </gadget>
+
+
+       
+        <!-- Noise prewhitening -->
+        <gadget>
+            <name>IsmrmrdDump</name>
+            <dll>gadgetron_mricore</dll>
+            <classname>IsmrmrdDumpGadget</classname>
+            <property><name>file_prefix</name><value></value></property>
+            <property><name>folder</name><value>/opt/data/scanner_data</value></property>
+            <property><name>save_xml_header_only</name><value>false</value></property>
+        </gadget>
+    
+
+        </stream>
+</configuration>
+
