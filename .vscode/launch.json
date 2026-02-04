@@ -1,0 +1,604 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python Debugger: run_gadgetron_test.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "/home/javeda2/mrprogs/gadgetron/test/integration/run_gadgetron_test.py",
+            "args": [
+                "-a", "localhost",
+                "-d", "data",
+                "-t", "test",
+                "-p", "9055",
+                "-e", "cases/gpu_spiral_3D_imoco.cfg"
+            ],
+            "console": "integratedTerminal",
+            "pythonPath": "/home/javeda2/conda/envs/gadgetron_128/bin/python"
+        },
+        {
+            "name": "(gdb) test_all dcf",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/opt/package/bin/test_all",
+            "args": [
+                "--gtest_filter=*MOCO*fc*test*"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/opt/conda/envs/gadgetron/bin/gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "(gdb) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/home/javeda2/conda/envs/gadgetron_128/bin/gadgetron",
+            "args": [
+                "-p",
+                "9055"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [
+                {
+                    "name": "THRUST_DEBUG",
+                    "value": "1"
+                }
+            ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/home/javeda2/conda/envs/gadgetron_128/bin/gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "(gdb) GTNEW (cont)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/opt/conda/envs/gadgetron/bin/gadgetron",
+            "args": [
+                "-p",
+                "9002"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "(gdb) GTClient",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/opt/conda/envs/gadgetron/bin/gadgetron_ismrmrd_client",
+            "args": [
+                "-p",
+                "9002",
+                "-f",
+                "/home/vscode/mf_spiral_flow_pd_206026_30000023040410353715400000003_30000023040410353715400000003_240_20230405-144612.h5",
+                "-c",
+                "spiral_vds_feedback.xml"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "(gdb) Reconstruction",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/opt/conda/envs/gadgetron/bin/reconstruction",
+            //"-t","/opt/data/opt/data/tmp_workdir_gt_107/temp_traj.real3","-d","/opt/data/opt/data/tmp_workdir_gt_107/temp_data.complex","-w","/opt/data/opt/data/tmp_workdir_gt_107/temp_dcw.real","-o","/opt/data/opt/data/tmp_workdir_gt_107/temp","--reconDims","/opt/data/opt/data/tmp_workdir_gt_107/reconDims.real","--ereconDims","/opt/data/opt/data/tmp_workdir_gt_107/ereconDims.real","--fov","/opt/data/opt/data/tmp_workdir_gt_107/fov.real","--shortPerTime","/opt/data/opt/data/tmp_workdir_gt_107/shots_per_time.real","--csm","/opt/data/opt/data/tmp_workdir_gt_107/csm.complex","--combination_weights","/opt/data/opt/data/tmp_workdir_gt_107/cw.complex","--scaled_time","/opt/data/opt/data/tmp_workdir_gt_107/sct.real","--fbins","/opt/data/opt/data/tmp_workdir_gt_107/fbins.real","--oversampling","1.500000e+00","-i","30","-k","3","-s","0","--tolerance","1.000000e-09","--lambda_spatial","5.000000e-02","--lambda_time","1","--lambda_time2","1.000000e-01","--reconstructionType","9","--deformation","/opt/data/opt/data/tmp_workdir_gt_107/def.real","--invdeformation","/opt/data/opt/data/tmp_workdir_gt_107/invdef.real","--pseudoReplica","0"
+            //"-t", "/opt/data/opt/data/tmp_workdir_gt_1/temp_traj.real3", "-d", "/opt/data/opt/data/tmp_workdir_gt_1/temp_data.complex", "-w", "/opt/data/opt/data/tmp_workdir_gt_1/temp_dcw.real", "-o", "/opt/data/opt/data/tmp_workdir_gt_1/temp", "--reconDims", "/opt/data/opt/data/tmp_workdir_gt_1/reconDims.real", "--ereconDims", "/opt/data/opt/data/tmp_workdir_gt_1/ereconDims.real", "--fov", "/opt/data/opt/data/tmp_workdir_gt_1/fov.real", "--shortPerTime", "/opt/data/opt/data/tmp_workdir_gt_1/shots_per_time.real", "--csm", "/opt/data/opt/data/tmp_workdir_gt_1/csm.complex", "--combination_weights", "/opt/data/opt/data/tmp_workdir_gt_1/cw.complex", "--scaled_time", "/opt/data/opt/data/tmp_workdir_gt_1/sct.real", "--fbins", "/opt/data/opt/data/tmp_workdir_gt_1/fbins.real", "--oversampling", "2.1", "-i", "10", "-k", "3", "-s", "True", "--tolerance", "0.001", "--lambda_spatial", "0.05", "--lambda_time", "0.05", "--lambda_time2", "0.05", "--reconstructionType", "3", "--deformation", "/opt/data/opt/data/tmp_workdir_gt_1/def.real", "--invdeformation", "/opt/data/opt/data/tmp_workdir_gt_1/invdef.real", "--pseudoReplica", "False"
+            "args": [
+                "-t",
+                "/opt/data//tmp_workdir_gt_1/temp_traj.real3",
+                "-d",
+                "/opt/data//tmp_workdir_gt_1/temp_data.complex",
+                "-w",
+                "/opt/data/tmp_workdir_gt_1/temp_dcw.real",
+                "-o",
+                "/opt/data/tmp_workdir_gt_1/temp",
+                "--reconDims",
+                "/opt/data/tmp_workdir_gt_1/reconDims.real",
+                "--ereconDims",
+                "/opt/data/tmp_workdir_gt_1/ereconDims.real",
+                "--fov",
+                "/opt/data/tmp_workdir_gt_1/fov.real",
+                "--shortPerTime",
+                "/opt/data/tmp_workdir_gt_1/shots_per_time.real",
+                "--csm",
+                "/opt/data/tmp_workdir_gt_1/csm.complex",
+                "--combination_weights",
+                "/opt/data/tmp_workdir_gt_1/cw.complex",
+                "--scaled_time",
+                "/opt/data/tmp_workdir_gt_1/sct.real",
+                "--fbins",
+                "/opt/data/tmp_workdir_gt_1/fbins.real",
+                "--oversampling",
+                "2.1",
+                "-i",
+                "10",
+                "-k",
+                "3",
+                "-s",
+                "True",
+                "--tolerance",
+                "0.001",
+                "--lambda_spatial",
+                "0.5",
+                "--lambda_time",
+                "1",
+                "--lambda_time2",
+                "0.05",
+                "--reconstructionType",
+                "3",
+                "--deformation",
+                "/opt/data/tmp_workdir_gt_1/def.real",
+                "--invdeformation",
+                "/opt/data/tmp_workdir_gt_1/invdef.real",
+                "--pseudoReplica",
+                "False",
+                "--norm",
+                "2"
+            ],
+            //"-t","/opt/data/opt/data/tmp_workdir_gt_15/temp_traj.real3","-d","/opt/data/opt/data/tmp_workdir_gt_15/temp_data.complex","-w","/opt/data/opt/data/tmp_workdir_gt_15/temp_dcw.real","-o","/opt/data/opt/data/tmp_workdir_gt_15/temp","--reconDims","/opt/data/opt/data/tmp_workdir_gt_15/reconDims.real","--ereconDims","/opt/data/opt/data/tmp_workdir_gt_15/ereconDims.real","--fov","/opt/data/opt/data/tmp_workdir_gt_15/fov.real","--shortPerTime","/opt/data/opt/data/tmp_workdir_gt_15/shots_per_time.real","--csm","/opt/data/opt/data/tmp_workdir_gt_15/csm.complex","--combination_weights","/opt/data/opt/data/tmp_workdir_gt_15/cw.complex","--scaled_time","/opt/data/opt/data/tmp_workdir_gt_15/sct.real","--fbins","/opt/data/opt/data/tmp_workdir_gt_15/fbins.real","--oversampling","1.500000e+00","-i","10","-k","3","-s","1","--tolerance","100","--lambda_spatial","5.000000e-02","--lambda_time","5.000000e-01","--lambda_time2","5.000000e-01","--reconstructionType","6","--deformation","/opt/data/opt/data/tmp_workdir_gt_15/def.real","--invdeformation","/opt/data/opt/data/tmp_workdir_gt_15/invdef.real","--pseudoReplica","0"],
+            //"-t","/opt/data/opt/data/tmp_workdir_gt_2/temp_traj.real3", "-d", "/opt/data/opt/data/tmp_workdir_gt_2/temp_data.complex", "-w", "/opt/data/opt/data/tmp_workdir_gt_2/temp_dcw.real", "-o", "/opt/data/opt/data/tmp_workdir_gt_2/temp", "--reconDims", "/opt/data/opt/data/tmp_workdir_gt_2/reconDims.real", "--ereconDims", "/opt/data/opt/data/tmp_workdir_gt_2/ereconDims.real", "--fov", "/opt/data/opt/data/tmp_workdir_gt_2/fov.real", "--shortPerTime", "/opt/data/opt/data/tmp_workdir_gt_2/shots_per_time.real", "--csm", "/opt/data/opt/data/tmp_workdir_gt_2/csm.complex", "--combination_weights", "/opt/data/opt/data/tmp_workdir_gt_2/cw.complex", "--scaled_time", "/opt/data/opt/data/tmp_workdir_gt_2/sct.real", "--fbins", "/opt/data/opt/data/tmp_workdir_gt_2/fbins.real", "--oversampling", "2.1", "-i", "10", "-k", "3", "-s", "True", "--tolerance", "0.001", "--lambda_spatial", "0.05", "--lambda_time", "0.05", "--lambda_time2", "0.05", "--reconstructionType", "3", "--deformation", "/opt/data/opt/data/tmp_workdir_gt_2/def.real", "--invdeformation", "/opt/data/opt/data/tmp_workdir_gt_2/invdef.real", "--pseudoReplica", "False"],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "(gdb) Reconstruction2D",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/opt/conda/envs/gadgetron/bin/reconstruction_2D",
+            "args": [
+                "-t",
+                "/opt/data/opt/data/tmp_workdir_gt_57/temp_traj.real2",
+                "-d",
+                "/opt/data/opt/data/tmp_workdir_gt_57/temp_data.complex",
+                "-w",
+                "/opt/data/opt/data/tmp_workdir_gt_57/temp_dcw.real",
+                "-o",
+                "/opt/data/opt/data/tmp_workdir_gt_57/temp",
+                "--reconDims",
+                "/opt/data/opt/data/tmp_workdir_gt_57/reconDims.real",
+                "--ereconDims",
+                "/opt/data/opt/data/tmp_workdir_gt_57/ereconDims.real",
+                "--fov",
+                "/opt/data/opt/data/tmp_workdir_gt_57/fov.real",
+                "--shortPerTime",
+                "/opt/data/opt/data/tmp_workdir_gt_57/shots_per_time.real",
+                "--csm",
+                "/opt/data/opt/data/tmp_workdir_gt_57/csm.complex",
+                "--combination_weights",
+                "/opt/data/opt/data/tmp_workdir_gt_57/cw.complex",
+                "--scaled_time",
+                "/opt/data/opt/data/tmp_workdir_gt_57/sct.real",
+                "--fbins",
+                "/opt/data/opt/data/tmp_workdir_gt_57/fbins.real",
+                "--oversampling",
+                "2.100000e+00",
+                "-i",
+                "10",
+                "-k",
+                "3",
+                "-s",
+                "1",
+                "--tolerance",
+                "1.000000e-03",
+                "--lambda_spatial",
+                "5.000000e-02",
+                "--lambda_time",
+                "1",
+                "--reconstructionType",
+                "0",
+                "--deformation",
+                "/opt/data/opt/data/tmp_workdir_gt_57/def.real",
+                "--invdeformation",
+                "/opt/data/opt/data/tmp_workdir_gt_57/invdef.real",
+                "--pseudoReplica",
+                "0"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "CUDA C++: Launch",
+            "type": "cuda-gdb",
+            "request": "launch",
+            "program": "/usr/local/bin/applyDeformation",
+            "args": [
+                "-m",
+                "/opt/data/tmp_workdir_gt_4/source_image.complex",
+                "-v",
+                "/opt/data/tmp_workdir_gt_4/vfield.real",
+                "-r",
+                "/opt/data/tmp_workdir_gt_4/deformed"
+            ]
+        },
+        {
+            "name": "(gdb) SenseRecon",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/usr/local/bin/sense_reconstruction_concomitant_fields_fast",
+            // "args": ["-t","/opt/data/temp_traj.real3","-d","/opt/data/temp_data.complex","--dcw","/opt/data/temp_dcw.real","-c", "/opt/data/temp_csm.complex", "-o", "/opt/data/temp_images.complex" ,"--oversampling", "2", "--xsize", "320", "--ysize", "320", "--ezsize", "36", "--rzsize", "30", "-i", "10", "-k", "3", "--kappa", "0.000", "--tolerance","0.001", "--calculateCSM", "false","--channelIm","false","--lowFreq","0.0023","--upperFreq","1929.95","--numF","3","--sct","/opt/data/temp_sct.real"],
+            // --oversampling 1.500000e+00 --xsize 384 --ysize 384 --ezsize 44 --rzsize 36 -i 10 -k 3 --kappa 0 --calculateCSM false --channelIm false --tolerance 1.000000e-03 --lowFreq 7.021221e-03 --upperFreq 2.497668e+03 --numF 45 --sct /opt/data/tmp_workdir_gt_1/temp_sct.real --doSense true
+            "args": [
+                "-t",
+                "/opt/data/tmp_workdir_gt_4/temp_traj.real3",
+                "-d",
+                "/opt/data/tmp_workdir_gt_4/temp_data.complex",
+                "-w",
+                "/opt/data/tmp_workdir_gt_4/temp_dcw.real",
+                "-c",
+                "/opt/data/tmp_workdir_gt_4/temp_csm.complex",
+                "-o",
+                "/opt/data/tmp_workdir_gt_4/temp_images.complex",
+                "--oversampling",
+                "1.5",
+                "--xsize",
+                "240",
+                "--ysize",
+                "240",
+                "--ezsize",
+                "88",
+                "--rzsize",
+                "72",
+                "--tolerance",
+                "0.001",
+                "-i",
+                "10",
+                "-k",
+                "3",
+                "--kappa",
+                "0",
+                "--calculateCSM",
+                "true",
+                "--csmout",
+                "/opt/data/tmp_workdir_gt_4/temp_csm_2.complex",
+                "--channelIm",
+                "false",
+                "--lowFreq",
+                "0",
+                "--upperFreq",
+                "0",
+                "--numF",
+                "1",
+                "--sct",
+                "/opt/data/tmp_workdir_gt_4/temp_sct.real",
+                "--doSense",
+                "false",
+                "--cweights",
+                "/opt/data/tmp_workdir_gt_4/temp_cweights.complex",
+                "--numOffFreq",
+                "1",
+                "--offFreq",
+                "0",
+                "--samplingTime",
+                "0.000002"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "(gdb) SenseRecon_TV",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/usr/local/bin/sense_reconstruction_wconcom_tv",
+            // "args": ["-t","/opt/data/temp_traj.real3","-d","/opt/data/temp_data.complex","--dcw","/opt/data/temp_dcw.real","-c", "/opt/data/temp_csm.complex", "-o", "/opt/data/temp_images.complex" ,"--oversampling", "2", "--xsize", "320", "--ysize", "320", "--ezsize", "36", "--rzsize", "30", "-i", "10", "-k", "3", "--kappa", "0.000", "--tolerance","0.001", "--calculateCSM", "false","--channelIm","false","--lowFreq","0.0023","--upperFreq","1929.95","--numF","3","--sct","/opt/data/temp_sct.real"],
+            // --oversampling 1.500000e+00 --xsize 384 --ysize 384 --ezsize 44 --rzsize 36 -i 10 -k 3 --kappa 0 --calculateCSM false --channelIm false --tolerance 1.000000e-03 --lowFreq 7.021221e-03 --upperFreq 2.497668e+03 --numF 45 --sct /opt/data/tmp_workdir_gt_1/temp_sct.real --doSense true
+            "args": [
+                "-t",
+                "/opt/data/tmp_workdir_gt_1/temp_traj.real3",
+                "-d",
+                "/opt/data/tmp_workdir_gt_1/temp_data.complex",
+                "-w",
+                "/opt/data/tmp_workdir_gt_1/temp_dcw.real",
+                "-c",
+                "/opt/data/tmp_workdir_gt_1/temp_csm.complex",
+                "-o",
+                "/opt/data/tmp_workdir_gt_1/temp_images.complex",
+                "--oversampling",
+                "1.5",
+                "--xsize",
+                "192",
+                "--ysize",
+                "192",
+                "--ezsize",
+                "20",
+                "--rzsize",
+                "20",
+                "--tolerance",
+                "0.0000001",
+                "-i",
+                "100",
+                "-k",
+                "3",
+                "--kappa",
+                "0",
+                "--calculateCSM",
+                "false",
+                "--csmout",
+                "/opt/data/tmp_workdir_gt_1/temp_csm_2.complex",
+                "--channelIm",
+                "false",
+                "--lowFreq",
+                "0",
+                "--upperFreq",
+                "0",
+                "--numF",
+                "1",
+                "--sct",
+                "/opt/data/tmp_workdir_gt_1/temp_sct.real",
+                "--doSense",
+                "true",
+                "--cweights",
+                "/opt/data/tmp_workdir_gt_1/temp_cweights.complex",
+                "--lambda",
+                "1e-7",
+                "--alpha",
+                "0.1"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "(gdb) estimateDCF",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/usr/local/bin/estimate_dcf_gt",
+            "args": [
+                "-t",
+                "/opt/data/tmp_workdir_gt_2_091426/temp_traj.real3",
+                "-r",
+                "/opt/data/tmp_workdir_gt_2_091426/temp_dcf.real",
+                "-x",
+                "256",
+                "-y",
+                "256",
+                "-z",
+                "128",
+                "-i",
+                "15",
+                "-d",
+                "3",
+                "-o",
+                "1.5",
+                "-k",
+                "5.5"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "(gdb) GT",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/home/gtuser/local/bin/gadgetron",
+            "args": [
+                "-p",
+                "9080",
+                "-D",
+                "~/.gadgetron/storage/DebugDatabase",
+                "-S",
+                "~/.gadgetron/Debugstorage",
+                "-s",
+                "9113",
+                "-G",
+                "/home/gtuser/local/"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [
+                {
+                    "name": "LD_LIBRARY_PATH",
+                    "value": "/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/cuda/lib64:/usr/local/cuda/lib64/stubs:/usr/lib/x86_64-linux-gnu:/opt/intel/mkl/lib/intel64:/opt/intel/lib/intel64:/home/gtuser/local/lib"
+                }
+            ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "(gdb) register_3d_volumes.cpp",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/usr/local/bin/register_3d_volumes",
+            // "args": ["-t","/opt/data/temp_traj.real3","-d","/opt/data/temp_data.complex","--dcw","/opt/data/temp_dcw.real","-c", "/opt/data/temp_csm.complex", "-o", "/opt/data/temp_images.complex" ,"--oversampling", "2", "--xsize", "320", "--ysize", "320", "--ezsize", "36", "--rzsize", "30", "-i", "10", "-k", "3", "--kappa", "0.000", "--tolerance","0.001", "--calculateCSM", "false","--channelIm","false","--lowFreq","0.0023","--upperFreq","1929.95","--numF","3","--sct","/opt/data/temp_sct.real"],
+            // --oversampling 1.500000e+00 --xsize 384 --ysize 384 --ezsize 44 --rzsize 36 -i 10 -k 3 --kappa 0 --calculateCSM false --channelIm false --tolerance 1.000000e-03 --lowFreq 7.021221e-03 --upperFreq 2.497668e+03 --numF 45 --sct /opt/data/tmp_workdir_gt_1/temp_sct.real --doSense true
+            //-f /opt/data/tmp_workdir_gt_1/target_image.double -m /opt/data/tmp_workdir_gt_1/source_image.double -r /opt/data/tmp_workdir_gt_1/deformation -i /opt/data/tmp_workdir_gt_1/deformed -a /opt/data/tmp_workdir_gt_1/sigma.double -b /opt/data/tmp_workdir_gt_1/regularizer.double -t /opt/data/tmp_workdir_gt_1/iterations.double -l 5 -d LocalCCR'
+            "args": [
+                "-f",
+                "/opt/data/tmp_workdir_gt_40/target_image.double",
+                "-m",
+                "/opt/data/tmp_workdir_gt_40/source_image.double",
+                "-r",
+                "/opt/data/tmp_workdir_gt_40/deformation",
+                "-i",
+                "/opt/data/tmp_workdir_gt_40/deformed",
+                "-a",
+                "/opt/data/tmp_workdir_gt_40/sigma.double",
+                "-b",
+                "/opt/data/tmp_workdir_gt_40/regularizer.double",
+                "-t",
+                "/opt/data/tmp_workdir_gt_40/iterations.double",
+                "-l",
+                "5",
+                "-d",
+                "LocalCCR",
+                "-z",
+                "0"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "(gdb) register_3d_gpu_all.cpp",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/opt/conda/envs/gadgetron/bin/register_3d_gpu_all",
+            // "args": ["-t","/opt/data/temp_traj.real3","-d","/opt/data/temp_data.complex","--dcw","/opt/data/temp_dcw.real","-c", "/opt/data/temp_csm.complex", "-o", "/opt/data/temp_images.complex" ,"--oversampling", "2", "--xsize", "320", "--ysize", "320", "--ezsize", "36", "--rzsize", "30", "-i", "10", "-k", "3", "--kappa", "0.000", "--tolerance","0.001", "--calculateCSM", "false","--channelIm","false","--lowFreq","0.0023","--upperFreq","1929.95","--numF","3","--sct","/opt/data/temp_sct.real"],
+            // --oversampling 1.500000e+00 --xsize 384 --ysize 384 --ezsize 44 --rzsize 36 -i 10 -k 3 --kappa 0 --calculateCSM false --channelIm false --tolerance 1.000000e-03 --lowFreq 7.021221e-03 --upperFreq 2.497668e+03 --numF 45 --sct /opt/data/tmp_workdir_gt_1/temp_sct.real --doSense true
+            //-f /opt/data/tmp_workdir_gt_1/target_image.double -m /opt/data/tmp_workdir_gt_1/source_image.double -r /opt/data/tmp_workdir_gt_1/deformation -i /opt/data/tmp_workdir_gt_1/deformed -a /opt/data/tmp_workdir_gt_1/sigma.double -b /opt/data/tmp_workdir_gt_1/regularizer.double -t /opt/data/tmp_workdir_gt_1/iterations.double -l 5 -d LocalCCR'
+            "args": [
+                "-f",
+                "/opt/data/opt/data/tmp_workdir_gt_39/images.real",
+                "-n",
+                "0",
+                "-r",
+                "/opt/data/opt/data/tmp_workdir_gt_39/deformation",
+                "-i",
+                "/opt/data/opt/data/tmp_workdir_gt_39/deformed",
+                "-a",
+                "1.000000e-03"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "(gdb) applyDeformation.cpp",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/usr/local/bin/applyDeformation",
+            // "args": ["-t","/opt/data/temp_traj.real3","-d","/opt/data/temp_data.complex","--dcw","/opt/data/temp_dcw.real","-c", "/opt/data/temp_csm.complex", "-o", "/opt/data/temp_images.complex" ,"--oversampling", "2", "--xsize", "320", "--ysize", "320", "--ezsize", "36", "--rzsize", "30", "-i", "10", "-k", "3", "--kappa", "0.000", "--tolerance","0.001", "--calculateCSM", "false","--channelIm","false","--lowFreq","0.0023","--upperFreq","1929.95","--numF","3","--sct","/opt/data/temp_sct.real"],
+            // --oversampling 1.500000e+00 --xsize 384 --ysize 384 --ezsize 44 --rzsize 36 -i 10 -k 3 --kappa 0 --calculateCSM false --channelIm false --tolerance 1.000000e-03 --lowFreq 7.021221e-03 --upperFreq 2.497668e+03 --numF 45 --sct /opt/data/tmp_workdir_gt_1/temp_sct.real --doSense true
+            //-f /opt/data/tmp_workdir_gt_1/target_image.double -m /opt/data/tmp_workdir_gt_1/source_image.double -r /opt/data/tmp_workdir_gt_1/deformation -i /opt/data/tmp_workdir_gt_1/deformed -a /opt/data/tmp_workdir_gt_1/sigma.double -b /opt/data/tmp_workdir_gt_1/regularizer.double -t /opt/data/tmp_workdir_gt_1/iterations.double -l 5 -d LocalCCR'
+            "args": [
+                "-m",
+                "/opt/data/tmp_workdir_gt_4/source_image.complex",
+                "-v",
+                "/opt/data/tmp_workdir_gt_4/vfield.real",
+                "-r",
+                "/opt/data/tmp_workdir_gt_4/deformed"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        }
+    ]
+}

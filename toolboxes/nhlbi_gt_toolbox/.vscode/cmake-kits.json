@@ -1,0 +1,7 @@
+[
+  {
+    "name": "Gadgetron Conda",
+    "environmentSetupScript": "source /home/javeda2/conda/etc/profile.d/mamba.sh \" ; source activate gadgetron \"",
+    "isTrusted": true
+  }
+]

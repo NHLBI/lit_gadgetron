@@ -1,0 +1,109 @@
+name: gadgetron
+channels:
+  - ismrmrd
+  - gadgetron
+  - nvidia/label/cuda-12.8.0
+  - conda-forge
+  - bioconda
+  - defaults
+  - rapidsai
+
+dependencies:
+  - python=3.10
+  - python_abi=3.10.* *_cp310
+  - pip
+  - numpy=1.24.4
+  - scipy=1.10.1
+  - pyfftw=0.13.1
+  - h5py>=3.6
+  - pyyaml=6.0
+  - jq=1.6
+  - yq=2.13
+  - deepdiff=5.8
+  - packaging>=23.2
+  - setuptools>=68.0
+
+  # Build tools
+  - cmake=3.21.3
+  - make=4.3
+  - gdb=11.1
+  - gcc_linux-64=9.4.0
+  - gxx_linux-64=9.4.0
+  - ninja=1.10
+  - conda-build=3.23
+  - conda-verify=3.1
+  - shellcheck=0.7.2
+  - valgrind=3.17
+  - doxygen=1.9
+  - jupyter=1.0.0
+
+  # CUDA 12.8 stack
+  - cuda-cudart
+  - cuda-cudart-dev
+  - cuda-cccl
+  - cuda-driver-dev
+  - cuda-libraries
+  - cuda-libraries-dev
+  - cuda-runtime
+  - cuda-nvcc
+  - cuda-nvrtc
+  - cuda-nvrtc-dev
+  - cudnn
+
+  # Math and Signal Processing
+  - fftw=3.3.9
+  - armadillo=9.900.5
+  - mkl>=2024.2.2,<2025.0a0
+  - mkl-include>=2024.2.2,<2025.0a0
+  - libxml2=2.9
+  - libcurl=7.79.1
+  - plplot=5.15.0
+  - pugixml=1.12.1
+  - onnxruntime=1.10.0
+  - xsdata>=22.2
+
+  # Gadgetron + ISMRMRD
+  - ismrmrd::ismrmrd=1.13.7
+  - ismrmrd::ismrmrd-python>=1.9.8
+  - ismrmrd::siemens_to_ismrmrd=1.2.11
+  - ismrmrd::mrd-storage-server=0.0.12
+  - gadgetron::gadgetron-python=1.4.1
+  - gadgetron::range-v3=0.11.0
+
+  # Boost
+  - boost=1.80.0
+  - icu=70.1
+
+  # Docs
+  - sphinx=4.4.0
+  - sphinx_rtd_theme=0.4.3
+  - recommonmark=0.7.1
+  - breathe=4.34
+
+  # Test tools
+  - gtest=1.10.0
+  - gmock=1.10.0
+  - junitparser=2.7.0
+  - anaconda-client=1.11
+  - howardhinnant_date=3.0.1
+  - sysroot_linux-64=2.17
+  - nlohmann_json=3.11.2
+  # GPU compute
+  - numba=0.61.2
+  - numba-cuda=0.8.0
+  - pynvjitlink
+
+  - pip:
+      - sigpy
+      - scikit-image
+      - nibabel
+      - antspyx
+      - einops
+      - wandb
+      - onnx
+      - junitparser==2.2.0
+      - --extra-index-url https://download.pytorch.org/whl/cu128
+      - torch==2.4.0
+      - torchvision==0.19.0
+      - torchaudio==2.4.0
+      - onnxruntime-gpu

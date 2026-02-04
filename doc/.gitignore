@@ -1,0 +1,7 @@
+death_row/figures/*.pdf
+*.gz
+*.log
+*.toc
+*.bbl
+*.blg
+*.aux

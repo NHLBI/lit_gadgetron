@@ -1,0 +1,6 @@
+#add_subdirectory(estimate_dcf)
+add_subdirectory(sense_3d)
+add_subdirectory(deconstruct)
+add_subdirectory(recon_2D)
+#add_subdirectory(registration)
+#add_subdirectory(moco)

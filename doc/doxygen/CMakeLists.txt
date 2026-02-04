@@ -1,0 +1,18 @@
+
+
+get_target_property(CORE_PUBLIC_HEADER_DIR gadgetron_core INTERFACE_INCLUDE_DIRECTORIES)
+file(GLOB_RECURSE CORE_PUBLIC_HEADERS ${CORE_PUBLIC_HEADER_DIR}/*.h)
+
+set(DOXYGEN_INDEX_FILE ${CMAKE_CURRENT_BINARY_DIR}/xml/index.xml)
+
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in Doxyfile @ONLY)
+add_custom_command(OUTPUT ${DOXYGEN_INDEX_FILE}
+        DEPENDS ${CORE_PUBLIC_HEADERS}
+        COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        MAIN_DEPENDENCY Doxyfile
+        COMMENT "Generating docs"
+        )
+
+add_custom_target(Doxygen ALL DEPENDS ${DOXYGEN_INDEX_FILE})

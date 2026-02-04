@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <version>2</version>
+
+    <readers>
+        <reader>
+            <dll>gadgetron_core_readers</dll>
+            <classname>AcquisitionReader</classname>
+        </reader>
+        <reader>
+            <dll>gadgetron_core_readers</dll>
+            <classname>WaveformReader</classname>
+        </reader>
+        <reader>
+            <dll>gadgetron_core_readers</dll>
+            <classname>ImageReader</classname>
+        </reader>
+    </readers>
+
+    <writers>
+        <writer>
+            <dll>gadgetron_core_writers</dll>
+            <classname>ImageWriter</classname>
+        </writer>
+    </writers>
+<stream>
+    <gadget><name>NoiseAdjust</name><dll>gadgetron_mricore</dll><classname>NoiseAdjustGadget</classname></gadget>
+	
+	            <external>
+                <!-- 
+                <connect port='2000'/>
+                -->
+                <execute name="Pulseq_WaveformToTrajectory" target="Pulseq_WaveformtoTrajectoryGadget" type="python"/>
+
+                <configuration>
+                    <!--<property name="traj_folder_or_file"         value="/opt/data/daudepv/"/>-->
+					<property name="GIRF_folder"         value="/opt/GIRF/GIRF_20250225/"/>
+					<property name="split_echoes"         value="True"/>
+				</configuration>
+                </external> 
+
+
+                <parallel>
+                    <branch>
+                    <dll>nhlbi_gt_gadgets</dll>
+                        <classname>AcquisitionWaveformFanout</classname>
+                    </branch>
+                    <!-- Branch Feedback -->
+                    <stream key="echo_0">
+                        <gadget>
+                            <name>SelectEchoes</name>
+                            <dll>nhlbi_gt_gadgets</dll>
+                            <classname>SelectEchoes</classname>
+                            <property><name>setnum</name><value>0</value></property>
+                        </gadget> 
+            
+                        <external>
+                            <execute name="CardiacRespiGadget" target="CardiacRespiGadget" type="python"/>
+                             <configuration>
+                                <property name="R_numBins"         value="8"/>
+                                <property name="C_numBins"         value="1"/> <!--Set this way because we have 3 gpus-->
+                                <property name="R_bidirectional"         value="True"/> <!--Set this way because we have 3 gpus-->
+                                <property name="R_binningPercent"         value="40"/> <!--Set this way because we have 3 gpus-->
+                                <property name="R_stableBinning"         value="False"/> <!--Set this way because we have 3 gpus-->
+                                <property name="R_evenbins"         value="True"/> <!--Set this way because we have 3 gpus-->
+                                <property name="R_angular_filteration"         value="False"/> <!--Set this way because we have 3 gpus-->
+                                <property name="C_arrythmia_detection"         value="True"/> <!--Set this way because we have 3 gpus-->
+                                <property name="C_angular_filteration"         value="False"/> <!--Set this way because we have 3 gpus-->
+                                <property name="C_HRinfo"         value="False"/> <!--Set this way because we have 3 gpus-->
+                                <property name="C_evenbins"         value="False"/> <!--Set this way because we have 3 gpus-->
+                                <property name="C_smoothing"         value="False"/> <!--Set this way because we have 3 gpus-->
+                                <property name="bstar"         value="True"/> <!--Set this way because we have 3 gpus-->
+                                <property name="C_even_timing"         value="True"/> <!--Set this way because we have 3 gpus-->
+                                <property name="C_numBins_to_ms"         value="False"/> <!--Set this way because we have 3 gpus-->
+                                <property name="samples"         value="1"/> <!--Set this way because we have 3 gpus-->
+                            </configuration>
+                            <configuration/>
+                    </external> 
+
+                    <gadget>
+                        <name>ImagetoVector</name>
+                        <dll>nhlbi_gt_gadgets</dll>
+                        <classname>ImagetoVector</classname>
+                    </gadget>
+                    
+                    <gadget>
+                        <dll>gadgetron_mricore</dll>
+                        <classname>PCACoilGadget</classname>
+                    </gadget>
+                
+                    <gadget>
+                        <dll>gadgetron_mricore</dll>
+                        <classname>CoilReductionGadget</classname>
+                        <property name="coils_out" value="10"/>
+                    
+                    </gadget>
+            
+                    <gadget>
+                        <name>PrepreconParams</name>
+                        <dll>nhlbi_gt_gadgets</dll>
+                        <classname>PrepreconParams</classname>
+                        <property><name>matOSP_vector</name><value>1.0 1.0 0.8</value></property>
+                        <property><name>warpCUDA_vector</name><value>true true true</value></property>
+                        <property><name>downsampling_vector</name><value>1 1</value></property>
+                        <property><name>is3D</name><value>true</value></property>
+                        <property><name>kernel_width_dcf</name><value>4</value></property>
+                        <property><name>oversampling_factor_dcf</name><value>2.1</value></property>
+                        <property><name>kernel_width_dcf_avg</name><value>3</value></property>
+                        <property><name>oversampling_factor_dcf_avg</name><value>3</value></property>
+                        <property><name>lambda_spatial</name><value>0.05</value></property>
+                        <property><name>lambda_spatial_imoco</name><value>0.01</value></property>
+                        <property><name>lambda_time</name><value>0.1</value></property>
+                        <property><name>lambda_time2</name><value>0</value></property>
+                        <property><name>lambda_LR</name><value>0.1</value></property>
+                        <property><name>iteration_count_moco</name><value>1</value></property>
+                        <property><name>iterations</name><value>5</value></property>
+                        <property><name>iterations_imoco</name><value>4</value></property>
+                        <property><name>doMC_iter</name><value>false</value></property>
+                        <property><name>tolerance</name><value>1e-3</value></property>
+                        <property><name>selectedDevices_STR</name><value>2</value></property>
+                        <property><name>try_channel_gridding</name><value>false</value></property>
+                    </gadget>
+            
+                    <gadget>
+                        <name>Noncart_recon_gadget</name>
+                        <dll>nhlbi_gt_gadgets</dll>
+                        <classname>Noncart_recon_gadget</classname>
+            
+                        <property><name>Debug</name><value>0</value></property>
+                        <property><name>doConcomitantFieldCorrection</name><value>false</value></property>
+                        <property><name>referencePhase</name><value>0.49</value></property>
+                        <property><name>estimateCSM_perc</name><value>50</value></property>
+                        <property><name>reconType</name><value>6</value></property>
+                        <property><name>binning_order</name><value>0 1 2</value></property>
+                        <property><name>binning_collapse_to_last</name><value>false</value></property>
+                        <property><name>series_counter_initial</name><value>0</value></property> 
+                    </gadget>
+                    </stream>
+                    <!-- Branch Flow -->
+                    <stream key="echo_1">
+                        <gadget>
+                            <name>SelectEchoes</name>
+                            <dll>nhlbi_gt_gadgets</dll>
+                            <classname>SelectEchoes</classname>
+                            <property><name>setnum</name><value>1</value></property>
+                        </gadget> 
+            
+                        <external>
+                            <execute name="CardiacRespiGadget" target="CardiacRespiGadget" type="python"/>
+                             <configuration>
+                                <property name="R_numBins"         value="8"/>
+                                <property name="C_numBins"         value="1"/> <!--Set this way because we have 3 gpus-->
+                                <property name="R_bidirectional"         value="True"/> <!--Set this way because we have 3 gpus-->
+                                <property name="R_binningPercent"         value="40"/> <!--Set this way because we have 3 gpus-->
+                                <property name="R_stableBinning"         value="False"/> <!--Set this way because we have 3 gpus-->
+                                <property name="R_evenbins"         value="True"/> <!--Set this way because we have 3 gpus-->
+                                <property name="R_angular_filteration"         value="False"/> <!--Set this way because we have 3 gpus-->
+                                <property name="C_arrythmia_detection"         value="True"/> <!--Set this way because we have 3 gpus-->
+                                <property name="C_angular_filteration"         value="False"/> <!--Set this way because we have 3 gpus-->
+                                <property name="C_HRinfo"         value="False"/> <!--Set this way because we have 3 gpus-->
+                                <property name="C_evenbins"         value="False"/> <!--Set this way because we have 3 gpus-->
+                                <property name="C_smoothing"         value="False"/> <!--Set this way because we have 3 gpus-->
+                                <property name="bstar"         value="True"/> <!--Set this way because we have 3 gpus-->
+                                <property name="C_even_timing"         value="True"/> <!--Set this way because we have 3 gpus-->
+                                <property name="C_numBins_to_ms"         value="False"/> <!--Set this way because we have 3 gpus-->
+                                <property name="samples"         value="1"/> <!--Set this way because we have 3 gpus-->
+                            </configuration>
+                            <configuration/>
+                    </external> 
+            
+                    
+                    <gadget>
+                        <name>ImagetoVector</name>
+                        <dll>nhlbi_gt_gadgets</dll>
+                        <classname>ImagetoVector</classname>
+                    </gadget>
+                    
+                    <gadget>
+                        <dll>gadgetron_mricore</dll>
+                        <classname>PCACoilGadget</classname>
+                    </gadget>
+                
+                    <gadget>
+                        <dll>gadgetron_mricore</dll>
+                        <classname>CoilReductionGadget</classname>
+                        <property name="coils_out" value="10"/>
+                    
+                    </gadget>
+            
+                    <gadget>
+                        <name>PrepreconParams</name>
+                        <dll>nhlbi_gt_gadgets</dll>
+                        <classname>PrepreconParams</classname>
+                        <property><name>matOSP_vector</name><value>1 1 0.8</value></property>
+                        <property><name>warpCUDA_vector</name><value>true true true</value></property>
+                        <property><name>downsampling_vector</name><value>1 1</value></property>
+                        <property><name>is3D</name><value>true</value></property>
+                        <property><name>kernel_width_dcf</name><value>4</value></property>
+                        <property><name>oversampling_factor_dcf</name><value>2.1</value></property>
+                        <property><name>kernel_width_dcf_avg</name><value>3</value></property>
+                        <property><name>oversampling_factor_dcf_avg</name><value>3</value></property>
+                        <property><name>lambda_spatial</name><value>0.05</value></property>
+                        <property><name>lambda_spatial_imoco</name><value>0.01</value></property>
+                        <property><name>lambda_time</name><value>0.1</value></property>
+                        <property><name>lambda_time2</name><value>0</value></property>
+                        <property><name>lambda_LR</name><value>0.1</value></property>
+                        <property><name>iteration_count_moco</name><value>1</value></property>
+                        <property><name>iterations</name><value>5</value></property>
+                        <property><name>iterations_imoco</name><value>4</value></property>
+                        <property><name>doMC_iter</name><value>false</value></property>
+                        <property><name>tolerance</name><value>1e-3</value></property>
+                        <property><name>selectedDevices_STR</name><value>3</value></property>
+                        <property><name>try_channel_gridding</name><value>false</value></property>
+                    </gadget>
+            
+                    <gadget>
+                        <name>Noncart_recon_gadget</name>
+                        <dll>nhlbi_gt_gadgets</dll>
+                        <classname>Noncart_recon_gadget</classname>
+            
+                        <property><name>Debug</name><value>0</value></property>
+                        <property><name>doConcomitantFieldCorrection</name><value>false</value></property>
+                        <property><name>referencePhase</name><value>0.49</value></property>
+                        <property><name>estimateCSM_perc</name><value>50</value></property>
+                        <property><name>reconType</name><value>6</value></property>
+                        <property><name>binning_order</name><value>0 1 2</value></property>
+                        <property><name>binning_collapse_to_last</name><value>false</value></property>
+                        <property><name>series_counter_initial</name><value>2</value></property> 
+                    </gadget>
+                    </stream>
+            
+                    <merge>
+                        <dll>gadgetron_core_parallel</dll>
+                        <classname>UnorderedMerge</classname>
+                    </merge>
+            </parallel>
+
+    <gadget>
+        <name>ImageArraySplit</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>ImageArraySplitGadget</classname>
+    </gadget>
+	
+    <gadget>
+        <name>ImageFinish</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>ImageFinishGadget</classname>
+    </gadget>
+	
+    
+</stream>
+</configuration>
