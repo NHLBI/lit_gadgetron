@@ -15,9 +15,9 @@ Browse branches to access the code, data, and manuscript for each publication.
 
 | Branch Name | Publication Title | Brief description| Article Link |
 | :---: | :---: | :---: | :---: |
-| `cardiac_4D_imoco`        | Isotropic 3D cardiac cine imaging at 0.55 T using stack-of-spiral sampling and four-dimensional iterative motion compensation (4D iMoCo) | 4D iterative motion compensated image reconstruction for cardiac resolved imaging using stack of spirals| [10.1016/j.jocmr.2026.102698](https://doi.org/10.1016/j.jocmr.2026.102698) |
-| `auto_venc_calibration`   | Automatic velocity encoding (VENC) calibration for quantitative flow measurement to improve precision | Cartesian phase contrast image reconstruction with feedback messaging to automatically estimate  velocity encoding limit (VENC). | In preparation |
-| `cardiopulmonary_bstar` | “Two-for-one”: 3D cardiac and pulmonary MR imaging from a single acquisition using bSTAR | Dual image reconstruction pipeline (cardiac-resolved whole heart and respiratory resolved lung) for bSTAR acquisition (3D radial sampling, Pulseq) | In preparation |
+| [`cardiac_4D_imoco`](https://github.com/NHLBI/lit_gadgetron/tree/cardiac_4D_imoco)         | Isotropic 3D cardiac cine imaging at 0.55 T using stack-of-spiral sampling and four-dimensional iterative motion compensation (4D iMoCo) | 4D iterative motion compensated image reconstruction for cardiac resolved imaging using stack of spirals| [10.1016/j.jocmr.2026.102698](https://doi.org/10.1016/j.jocmr.2026.102698) |
+| [`auto_venc_calibration`](https://github.com/NHLBI/lit_gadgetron/tree/auto_venc_calibration)    | Automatic velocity encoding (VENC) calibration for quantitative flow measurement to improve precision | Cartesian phase contrast image reconstruction with feedback messaging to automatically estimate  velocity encoding limit (VENC). | In preparation |
+| [`cardiopulmonary_bstar`](https://github.com/NHLBI/lit_gadgetron/tree/cardiopulmonary_bstar)  | “Two-for-one”: 3D cardiac and pulmonary MR imaging from a single acquisition using bSTAR | Dual image reconstruction pipeline (cardiac-resolved whole heart and respiratory resolved lung) for bSTAR acquisition (3D radial sampling, Pulseq) | In preparation |
 
 ## How to access a project
 
