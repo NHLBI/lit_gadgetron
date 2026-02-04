@@ -33,14 +33,14 @@ Alternatively, you can test the code by pulling the provided docker image using 
 
 .. code-block:: console
 
-    docker pull gadgetronnhlbi/ubuntu_2204_cuda124_lit:auto_venc_calibration_rt
+    docker pull gadgetronnhlbi/u2204_cuda124_venc:auto_venc_calibration_rt
 
 
 This image can be deployed with: 
 
 .. code-block:: console
 
-    docker run --gpus all  --name=deploy_rt -ti -p 9063:9002 --volume=[LOCAL_DATA_FOLDER]:/opt/data --restart unless-stopped --detach gadgetronnhlbi/ubuntu_2204_cuda124_lit:auto_venc_calibration_rt`
+    docker run --gpus all  --name=deploy_rt -ti -p 9063:9002 --volume=[LOCAL_DATA_FOLDER]:/opt/data --restart unless-stopped --detach gadgetronnhlbi/u2204_cuda124_venc:auto_venc_calibration_rt`
 
 where **LOCAL_DATA_FOLDER** is the path to a folder containing raw data that can be used for testing the reconstruction. 
 

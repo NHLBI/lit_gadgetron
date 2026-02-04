@@ -2,7 +2,7 @@
 
 if [ $# -lt 2 ]
 then
-    base_name=" gadgetronnhlbi/ubuntu_2204_cuda124_lit"
+    base_name=" gadgetronnhlbi/u2204_cuda124_venc"
 else
     if [ $# -eq 2 ]
     then
