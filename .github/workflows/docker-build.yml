@@ -1,4 +1,4 @@
-name: Build and Push Docker Image to GHCR (GPU Build)
+name: cardio_pulmonary_bstar
 
 on:
   workflow_dispatch:
@@ -15,8 +15,10 @@ jobs:
       packages: write
 
     steps:
-      - name: Checkout code
+      - name: Checkout cardiopulmonary_bstar branch
         uses: actions/checkout@v4
+        with:
+          ref: cardiopulmonary_bstar
 
       - name: Get current date (YYYYMMDD)
         id: get_date
