@@ -1,9 +1,6 @@
 name: Build and Push Docker Image to GHCR (GPU Build)
 
 on:
-  push:
-    branches:
-      - cardiopulmonary_bstar
   workflow_dispatch:
 
 env:
