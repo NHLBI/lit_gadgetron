@@ -9,6 +9,7 @@ env:
 
 jobs:
   build-and-push:
+    if: github.actor == 'ahsanjav' || github.actor == 'pdaude'
     runs-on: [self-hosted]
     permissions:
       contents: read
