@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: lit_gadgetron
+  IMAGE_NAME: litgt_cardio_pulmonary_bstar
   REGISTRY: ghcr.io
 
 jobs:
