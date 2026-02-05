@@ -1,22 +1,24 @@
-name: Build and Push Docker Image to GHCR (GPU Build)
+name: cardio_pulmonary_bstar
 
 on:
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: lit_gadgetron
+  IMAGE_NAME: litgt_cardio_pulmonary_bstar
   REGISTRY: ghcr.io
 
 jobs:
   build-and-push:
-    runs-on: [self-hosted]
+    runs-on: [self-hosted, gadgetron_gpu]
     permissions:
       contents: read
       packages: write
 
     steps:
-      - name: Checkout code
+      - name: Checkout cardiopulmonary_bstar branch
         uses: actions/checkout@v4
+        with:
+          ref: cardiopulmonary_bstar
 
       - name: Get current date (YYYYMMDD)
         id: get_date
@@ -24,6 +26,9 @@ jobs:
 
       - name: Set DATE environment variable
         run: echo "DATE=${{ steps.get_date.outputs.date }}" >> $GITHUB_ENV
+
+      - name: Set lowercase owner name
+        run: echo "OWNER=$(echo '${{ env.OWNER }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -40,21 +45,21 @@ jobs:
       - name: Build Docker image dev (latest)
         run: |
           docker build --target gadgetron_cudabuild \
-            -t ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}_dev:latest \
-            -t ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}_dev:${{ env.DATE }} .
+            -t ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.IMAGE_NAME }}_dev:latest \
+            -t ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.IMAGE_NAME }}_dev:${{ env.DATE }} .
 
       - name: Push Docker image dev (latest)
         run: |
-          docker push ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}_dev:latest
-          docker push ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}_dev:${{ env.DATE }}
+          docker push ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.IMAGE_NAME }}_dev:latest
+          docker push ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.IMAGE_NAME }}_dev:${{ env.DATE }}
 
       - name: Build Docker image rt (latest)
         run: |
           docker build --target gadgetron_rt_cuda \
-            -t ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}_rt:latest \
-            -t ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}_rt:${{ env.DATE }} .
+            -t ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.IMAGE_NAME }}_rt:latest \
+            -t ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.IMAGE_NAME }}_rt:${{ env.DATE }} .
 
       - name: Push Docker image rt (latest)
         run: |
-          docker push ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}_rt:latest
-          docker push ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}_rt:${{ env.DATE }}
+          docker push ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.IMAGE_NAME }}_rt:latest
+          docker push ${{ env.REGISTRY }}/${{ env.OWNER }}/${{ env.IMAGE_NAME }}_rt:${{ env.DATE }}
