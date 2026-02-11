@@ -15,7 +15,7 @@
 #include "ConvolverNC2C_standard.cuh"
 
 #define CUDA_CONV_MAX_COILS             (16)
-#define CUDA_CONV_THREADS_PER_KERNEL    (192)
+#define CUDA_CONV_THREADS_PER_KERNEL    (512)  // Optimized for Blackwell/Hopper (testing 512)
 
 namespace Gadgetron
 {
@@ -151,9 +151,10 @@ namespace Gadgetron
             throw std::runtime_error(ss.str());
         }
         
-        // Allocate trajectory.
-        this->trajectory_ = thrust::device_vector<vector_td<REAL, D>>(
-            trajectory.get_number_of_elements());
+        // Allocate trajectory - use resize() to reuse existing allocation when possible.
+        // This avoids repeated allocation/deallocation which can cause memory pressure
+        // due to CUDA's deferred deallocation in tight loops.
+        this->trajectory_.resize(trajectory.get_number_of_elements());
 
         CHECK_FOR_CUDA_ERROR();
         
@@ -626,11 +627,11 @@ namespace Gadgetron
         dim3 dimGrid((this->plan_.num_samples_ + dimBlock.x - 1) / dimBlock.x,
                      this->plan_.num_frames_);
 
-        // Calculate how much shared memory to use per thread.
-        size_t bytes_per_thread =
-            domain_size_coils * sizeof(vector_td<REAL, D>);
-        size_t bytes_per_thread_tail =
-            domain_size_coils_tail * sizeof(vector_td<REAL, D>);
+	        // NOTE: The atomic NC2C kernel does not use dynamic shared memory.
+	        // Historically this path reserved shared memory similar to the STANDARD
+	        // (scatter-to-shmem) implementation. That unnecessarily reduced occupancy
+	        // (e.g. tens of KB per block) and can severely hurt performance on
+	        // A100/A6000/H200. Keep the launch sharedMemSize at 0.
 
         // Clear image if not accumulating.
         if (!accumulate)
@@ -642,14 +643,9 @@ namespace Gadgetron
             size_t num_coils = (repetition == num_repetitions - 1) ?
                 domain_size_coils_tail : domain_size_coils;
 
-            // Size of shared memory.
-            size_t sharedMemSize = (repetition == num_repetitions - 1) ?
-                dimBlock.x * bytes_per_thread_tail :
-                dimBlock.x * bytes_per_thread;
-
             // Launch CUDA kernel.
             NFFT_H_atomic_convolve_kernel<T, D, K>
-                <<<dimGrid, dimBlock, sharedMemSize>>>(
+	                <<<dimGrid, dimBlock, 0>>>(
                 vector_td<unsigned int, D>(this->plan_.matrix_size_os_),
                 vector_td<unsigned int, D>(this->plan_.matrix_padding_),
                 this->plan_.num_samples_,

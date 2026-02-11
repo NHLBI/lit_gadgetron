@@ -15,4 +15,5 @@ The toolbox has been tested on the following GPU models:
 * NVIDIA A100 (80 GB)
 * NVIDIA H200  (144 GB)
 * NVIDIA H100 NVL (94 GB)
+* NVIDIA  RTX PRO 6000 Blackwell (98 GB)
 

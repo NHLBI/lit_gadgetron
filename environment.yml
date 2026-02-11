@@ -14,8 +14,8 @@ dependencies:
   - pip
   - numpy=1.24.4
   - scipy=1.10.1
-  - pyfftw=0.13.1
-  - h5py>=3.6
+  - pyfftw=0.15.0
+  - h5py>=3.6,<3.8  # Must match conda HDF5 1.10.x
   - pyyaml=6.0
   - jq=1.6
   - yq=2.13
@@ -90,10 +90,11 @@ dependencies:
   - nlohmann_json=3.11.2
   # GPU compute
   - numba=0.61.2
-  - numba-cuda=0.8.0
+  - numba-cuda=0.22.1
   - pynvjitlink
 
   - pip:
+      - nvidia-cuda-runtime-cu12==12.8.57  # Required for CuPy JIT compilation (must match PyTorch cu128 requirement)
       - sigpy
       - scikit-image
       - nibabel
@@ -103,7 +104,7 @@ dependencies:
       - onnx
       - junitparser==2.2.0
       - --extra-index-url https://download.pytorch.org/whl/cu128
-      - torch==2.4.0
-      - torchvision==0.19.0
-      - torchaudio==2.4.0
+      - torch==2.7.0
+      - torchvision==0.22.0
+      - torchaudio==2.7.0
       - onnxruntime-gpu
