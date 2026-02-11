@@ -308,6 +308,10 @@ __device__ float cubictex(cudaTextureObject_t tex, float3 coord)
 
         auto output = *cureal_imag_to_complex<float_complext>(&outputr, &outputi);
 
+        // Destroy texture objects BEFORE freeing the underlying arrays
+        cudaDestroyTextureObject(texObj_r);
+        cudaDestroyTextureObject(texObj_i);
+
         cudaFreeArray(image_array_r);
         cudaFreeArray(image_array_i);
         outputr.clear();
