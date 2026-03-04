@@ -72,6 +72,8 @@ python/utils_function.py
 python/Pulseq_WaveformToTrajectory.py
 python/operators/low_rank.py
 python/kspace_preconditioning.py
+python/GriddingTCRGadget.py
+python/ROVirGadget.py
 ) 
 
 install(FILES ${gadgetron_python_gadgets_files}
