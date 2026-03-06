@@ -5,7 +5,7 @@ import cupy as cp
 import time
 
 from typing import Tuple, Union
-from utils.python import mrdhelper
+import mrdhelper
 
 
 def extract_middle_slices(array, n, dim, shift=0):

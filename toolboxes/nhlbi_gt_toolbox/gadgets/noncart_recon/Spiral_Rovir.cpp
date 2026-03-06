@@ -261,6 +261,7 @@ public:
                     auto csm_image_mc_cpu = std::move((channel_images).to_host());
                     this->session_storage->store(csm_image_mc_str, *csm_image_mc_cpu);
 
+                    GDEBUG_STREAM("CSM estimation done. Sending images to storage server and/or next gadget....")
                     cuNDArray<float_complext> ci_cropped;
                     if (combine_csm == 0)
                         ci_cropped = channel_images;
@@ -273,6 +274,8 @@ public:
                         //HACK: update the supposedly private image_dims_ var (but it's public) so cropping actually does something.
                         reconstruction.image_dims_.at(0) = (int) recon_params.rmatrixSize.x * 1.5;
                         reconstruction.image_dims_.at(1) = (int) recon_params.rmatrixSize.y * 1.5;
+
+
                         ci_cropped = reconstruction.crop_to_recondims_centered(*combined);
                         (*combined).clear();
                         

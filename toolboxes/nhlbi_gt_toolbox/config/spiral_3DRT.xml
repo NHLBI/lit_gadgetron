@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <version>2</version>
+
+    <readers>
+        <reader>
+            <dll>gadgetron_core_readers</dll>
+            <classname>AcquisitionReader</classname>
+        </reader>
+        <reader>
+            <dll>gadgetron_core_readers</dll>
+            <classname>WaveformReader</classname>
+        </reader>
+    </readers>
+
+    <writers>
+        <writer>
+            <dll>gadgetron_core_writers</dll>
+            <classname>ImageWriter</classname>
+        </writer>
+    </writers>
+
+    <stream>
+
+
+    <!-- Noise prewhitening -->
+    <gadget><name>NoiseAdjust</name><dll>gadgetron_mricore</dll><classname>NoiseAdjustGadget</classname></gadget>
+    
+    <!-- Convert gradient waveforms into trajectories -->
+    <gadget>
+        <name>WaveformToTrajectory</name>
+        <!--<dll>nhlbi_gt_toolbox</dll> -->
+        <dll>nhlbi_gt_gadgets</dll>
+        <classname>WaveformToTrajectory</classname>
+        <property><name>perform_GIRF</name><value>true</value></property>
+         <property><name>GIRF_folder</name><value>/opt/GIRF/GIRF_20250225/</value></property>
+         <property><name>attachWaveform</name><value>false</value></property>
+	    <property><name>generateTraj</name><value>true</value></property>
+        <property><name>generateTraj</name><value>true</value></property>
+    </gadget>
+
+    <gadget>
+        <name>RemoveNavsGadget</name>
+        <!--<dll>nhlbi_gt_toolbox</dll> -->
+        <dll>nhlbi_gt_gadgets</dll>
+        <classname>RemoveNavsGadget</classname>
+    </gadget>
+
+    <gadget>
+        <name>RemoveSpiralOversampling</name>
+        <!--<dll>nhlbi_gt_toolbox</dll> -->
+        <dll>nhlbi_gt_gadgets</dll>
+        <classname>RemoveSpiralOversampling</classname>
+    </gadget>
+     
+    <external>
+    <execute name="GriddingTCRGadget" target="GriddingTCRGadget" type="python" />
+        <!-- <connect port="2000" /> -->
+        <configuration>
+            <property name="n_tr_bin" value="100" />
+            <property name="montage" value="True" />
+            <property name="use_storage_server" value="True" />
+            <property name="recompute_dcf" value="False" />
+            <property name="niter" value="18" /> 
+            <property name="alg_type" value="stcr" /> <!-- tcr/cg/-->
+            <property name = "lambdat" value ="0.01" /> 
+            <property name="lambdas" value="0.002"/>
+            <property name="n_rovir_coils" value="0" /> 
+
+
+            <!-- More complicated input parameters (leave them as is unless you know what they effect!!)-->
+            <property name="recompute_L" value="True" />
+            <property name="time_per_frame_scale" value="0.8" />
+            <property name="max_frame_discard" value="0" />
+        </configuration>
+    </external> 
+
+     <!-- <external>
+        <execute name="SlicerGadget" target="SlicerGadget" type="python" />
+        <configuration>
+        </configuration>
+    </external> -->
+
+    <gadget>
+        <name>ImageArraySplit</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>ImageArraySplitGadget</classname>
+    </gadget>
+
+    <gadget>
+        <name>ComplexToFloatAttrib</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>ComplexToFloatGadget</classname>
+    </gadget>
+
+        
+     <gadget>
+        <name>AutoScaleGadget</name>
+        <dll>gadgetron_mricore</dll>
+            <classname>AutoScaleGadget</classname>
+      </gadget>
+    
+    <gadget>
+        <name>FloatToShort</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>FloatToUShortGadget</classname>
+    </gadget> 
+
+        
+    <gadget>
+        <name>ImageFinish</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>ImageFinishGadget</classname>
+    </gadget>
+    
+
+</stream>
+</configuration>
+

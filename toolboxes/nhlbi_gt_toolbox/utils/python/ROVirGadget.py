@@ -2,14 +2,14 @@ import gadgetron
 import ismrmrd as mrd
 
 # non-debugging
-from utils.python.storage_server import Storage
-from utils.python.tcr_utils import rovir_apply, crop_half_FOV
-from utils.python.coil_maps import calculate_csm_walsh_gpu
+#from utils.python.storage_server import Storage
+#from utils.python.tcr_utils import rovir_apply, crop_half_FOV
+#from utils.python.coil_maps import calculate_csm_walsh_gpu
 
 #debugging
-# from storage_server import Storage
-# from tcr_utils import *
-# from coil_maps import calculate_csm_walsh_gpu
+from storage_server import Storage
+from tcr_utils import *
+from coil_maps import calculate_csm_walsh_gpu
 
 import numpy as np
 from scipy.ndimage import gaussian_filter
@@ -259,7 +259,7 @@ def rovir_automatic_3d_pk_2(img_cc, csm_image_mc_, margin=5):
     V = eigvecs[:, np.flip(idx)]
 
     #V = V / np.linalg.norm(V, axis=0)
-    np.save("W_rovir.npy", V)
+    #np.save("W_rovir.npy", V)
 
     return [V, rovir_sig_, rovir_int_]
 
@@ -314,7 +314,7 @@ def rovir_automatic_3d_pk(img, img_coils, margin=10):
     # Reorder W
     W = V
 
-    np.save("W_rovir.npy", W)
+    #np.save("W_rovir.npy", W)
 
     return W
 

@@ -37,6 +37,8 @@ using namespace Gadgetron;
         std::map<size_t,hoNDArray<float>> trajectory_map;
         std::map<size_t,Core::Waveform> gradient_wave_store;
         size_t curAvg=0;
+
+        std::shared_ptr<MeasurementSpace> measurement;
  
         
     protected:

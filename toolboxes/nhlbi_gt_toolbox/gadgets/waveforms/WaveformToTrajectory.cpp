@@ -20,7 +20,7 @@ using namespace Gadgetron;
 using namespace Gadgetron::Core;
 using namespace nhlbi_toolbox::utils;
 WaveformToTrajectory::WaveformToTrajectory(const Core::Context &context, const Core::GadgetProperties &props)
-    : ChannelGadget(context, props), header{context.header}, trajParams{context.header} {}
+    : ChannelGadget(context, props), header{context.header}, trajParams{context.header}, measurement{context.storage.measurement} {}
  
 namespace
 {
@@ -255,6 +255,7 @@ void WaveformToTrajectory ::process(
                 traj_not_generated = false;
                 trajgen = std::get<0>(tw_gen);
                 dcwgen = std::get<1>(tw_gen);
+                this->measurement->store("trajectory", trajgen);
                 nhlbi_toolbox::utils::normalize_trajectory(&trajgen);
                 Tsamp_us = trajParams.get_Tsampling_us();
               }
@@ -278,6 +279,7 @@ void WaveformToTrajectory ::process(
               traj_not_generated = false;
               trajgen = std::get<0>(tw_gen);
               dcwgen = std::get<1>(tw_gen);
+              this->measurement->store("trajectory", trajgen);
               nhlbi_toolbox::utils::normalize_trajectory(&trajgen);
               Tsamp_us = trajParams.get_Tsampling_us();
             }

@@ -297,18 +297,23 @@ template <size_t D>
 template <typename T>
 cuNDArray<T> noncartesian_reconstruction<D>::crop_to_recondims_centered(cuNDArray<T> &input)
 {
-    cuNDArray<T> output(this->recon_dims_reconSpace);
+    cuNDArray<T> output; //(this->recon_dims_reconSpace);
 
-    if (input.get_number_of_dimensions() > 3)
-        crop<T, 4>(uint64d4((this->recon_dims_reconSpace[0] - image_dims_[0]) / 2, (this->recon_dims_reconSpace[1] - image_dims_[1]) / 2, (image_dims_[2] - this->recon_dims_reconSpace[2]) / 2, 0),
+    if (input.get_number_of_dimensions() > 3){
+        output.create(image_dims_[0], image_dims_[1], this->recon_dims_reconSpace[2], input.get_size(3));
+        crop<T, 4>(uint64d4((input.get_size(0) - image_dims_[0]) / 2, (input.get_size(1) - image_dims_[1]) / 2, (image_dims_[2] - this->recon_dims_reconSpace[2]) / 2, 0),
                     uint64d4(image_dims_[0], image_dims_[1], this->recon_dims_reconSpace[2], input.get_size(3)),
                     input,
                     output);
-    else
-        crop<T, 3>(uint64d3((this->recon_dims_reconSpace[0] - image_dims_[0]) / 2, (this->recon_dims_reconSpace[1] - image_dims_[1]) / 2, (image_dims_[2] - this->recon_dims_reconSpace[2]) / 2),
-                    uint64d3(image_dims_[0], image_dims_[1], this->recon_dims_reconSpace[2]),
+    }
+    else{
+        output.create(image_dims_[0], image_dims_[1], this->recon_dims_reconSpace[2]);
+        crop<T, 3>(uint64d3((input.get_size(0) - image_dims_[0]) / 2, (input.get_size(1) - image_dims_[1]) / 2, (image_dims_[2] - this->recon_dims_reconSpace[2]) / 2),
+                    //uint64d3(),
+                    uint64d3(output.get_size(0), output.get_size(1), output.get_size(2)),
                     input,
                     output);
+    }
     return output;
 }
 

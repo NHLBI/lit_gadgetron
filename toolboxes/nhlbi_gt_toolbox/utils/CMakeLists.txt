@@ -74,6 +74,9 @@ python/operators/low_rank.py
 python/kspace_preconditioning.py
 python/GriddingTCRGadget.py
 python/ROVirGadget.py
+python/storage_server.py
+python/tcr_utils.py
+python/mrdhelper.py
 ) 
 
 install(FILES ${gadgetron_python_gadgets_files}

@@ -11,9 +11,9 @@ import ctypes
 
 import matplotlib.pyplot as plt
 
-from utils.python.storage_server import Storage
-from utils.python.tcr_utils import draw_number_indicators, compute_preemphasis_order, gram_schmidt, replace_zero, update_nonant, resize_with_crop_or_pad, analyticaldcf, remove_zero_padding, soft_threshold, crop_half_FOV, online_STCR_ISTA_2_timed, online_TCR_POGM_2, modified_gram_schmidt
-from utils.python.tcr_utils import * 
+from storage_server import Storage
+from tcr_utils import draw_number_indicators, compute_preemphasis_order, gram_schmidt, replace_zero, update_nonant, resize_with_crop_or_pad, analyticaldcf, remove_zero_padding, soft_threshold, crop_half_FOV, online_STCR_ISTA_2_timed, online_TCR_POGM_2, modified_gram_schmidt
+from tcr_utils import * 
 
 from skimage.util import montage
 from skimage.transform import resize
