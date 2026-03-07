@@ -302,6 +302,9 @@ def GriddingTCRGadget(connection):
     else:
         MAX_FRAME_DISCARD = 6
     
+    # simply write frame_discard to a location for the SlicerGadget
+    np.save("frame_discard.npy", np.array(MAX_FRAME_DISCARD))
+    
     center_shift = 0
 
     storage = Storage("localhost", 9112, subject=subj_str)

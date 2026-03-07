@@ -77,6 +77,7 @@ python/ROVirGadget.py
 python/storage_server.py
 python/tcr_utils.py
 python/mrdhelper.py
+python/SlicerGadget.py
 ) 
 
 install(FILES ${gadgetron_python_gadgets_files}

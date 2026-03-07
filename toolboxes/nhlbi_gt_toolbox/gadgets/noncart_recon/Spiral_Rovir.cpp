@@ -275,7 +275,6 @@ public:
                         reconstruction.image_dims_.at(0) = (int) recon_params.rmatrixSize.x * 1.5;
                         reconstruction.image_dims_.at(1) = (int) recon_params.rmatrixSize.y * 1.5;
 
-
                         ci_cropped = reconstruction.crop_to_recondims_centered(*combined);
                         (*combined).clear();
                         

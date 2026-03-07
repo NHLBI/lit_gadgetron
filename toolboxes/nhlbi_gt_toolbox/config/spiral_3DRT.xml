@@ -52,6 +52,8 @@
         <dll>nhlbi_gt_gadgets</dll>
         <classname>RemoveSpiralOversampling</classname>
     </gadget>
+
+
      
     <external>
     <execute name="GriddingTCRGadget" target="GriddingTCRGadget" type="python" />
@@ -65,7 +67,7 @@
             <property name="alg_type" value="stcr" /> <!-- tcr/cg/-->
             <property name = "lambdat" value ="0.01" /> 
             <property name="lambdas" value="0.002"/>
-            <property name="n_rovir_coils" value="0" /> 
+            <property name="n_rovir_coils" value="6" /> 
 
 
             <!-- More complicated input parameters (leave them as is unless you know what they effect!!)-->
@@ -75,11 +77,12 @@
         </configuration>
     </external> 
 
-     <!-- <external>
+     <external>
         <execute name="SlicerGadget" target="SlicerGadget" type="python" />
         <configuration>
+            <property name="local_port" value="9004" />
         </configuration>
-    </external> -->
+    </external>
 
     <gadget>
         <name>ImageArraySplit</name>
