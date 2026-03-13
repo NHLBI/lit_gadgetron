@@ -91,6 +91,14 @@ Please note that if you are using the gadgetron_ismrmrd_client from outside the 
     cd LOCAL_DATA_FOLDER
     gadgetron_ismrmrd_client -a SERVER_ADDRESS -p 9063 -f DATA_FILE -c XXX.xml -o OUTPUT_FILENAME.h5` 
 
+
+3D Slicer Integration
+-------
+If the SlicerGadget is enabled, `3D Slicer <https://slicer.readthedocs.io/en/latest/index.html>`_ with the `SlicerIGT <https://www.slicerigt.org/wp/>`_ extension can be used for live data streaming. In order to use, setup SlicerIGT on the host device with the corresponding forwarded port to the container (ex. 9072) in the OpenIGTLinkIF module, as shown in the picture below.
+
+.. image:: igt.jpg
+   :width: 50%
+
 Dataset
 -------
 
