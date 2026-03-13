@@ -10,14 +10,14 @@ First of all, you will install Gadgetron :
 
 .. code-block:: console
 
-    git clone -b cardiopulmonary_bstar git@github.com:NHLBI/lit_gadgetron.git
+    git clone -b volumetric_rt_mri git@github.com:NHLBI/lit_gadgetron.git
     cd gadgetron
     conda env create -f environment.yml
     conda activate gadgetron
     mkdir build && cd build && cmake ../ -GNinja -DCMAKE_INSTALL_PREFIX=${CONDA_PREFIX} -DC_PREFIX_PATH=${CONDA_PREFIX} -DUSE_CUDA=ON -DUSE_MKL=ON
     ninja && ninja install
     
-Once built, the package can be used with gadgetron using the config xml files provided with this repository (`config files repository <https://github.com/NHLBI/lit_gadgetron/tree/cardiopulmonary_bstar/toolboxes/nhlbi_gt_toolbox/config>`_).
+Once built, the package can be used with gadgetron using the config xml files provided with this repository (`config files repository <https://github.com/NHLBI/lit_gadgetron/tree/volumetric_rt_mri/toolboxes/nhlbi_gt_toolbox/config>`_).
 
 Validate installation
 +++++++++++++++++++++
@@ -56,7 +56,7 @@ This image can be deployed with:
 
 .. code-block:: console
 
-    docker run --gpus all  --name=cardio_pulmonary_bstar_rt -ti -p 9063:9002 --volume=[LOCAL_DATA_FOLDER]:/opt/data --restart unless-stopped --detach ghcr.io/nhlbi/litgt_cardio_pulmonary_bstar_rt:20260205`
+    docker run --gpus all --name=volumetric_rt_mri -ti -p 9063:9002 -p 9072:9004 --volume=[LOCAL_DATA_FOLDER]:/opt/data --restart unless-stopped --detach ghcr.io/nhlbi/litgt_cardio_pulmonary_bstar_rt:20260205`
 
 where **LOCAL_DATA_FOLDER** is the path to a folder containing raw data that can be used for testing the reconstruction. 
 
@@ -67,7 +67,7 @@ Once the docker container is running, you can start a bash terminal inside the c
 
 .. code-block:: console
 
-    docker exec -ti cardio_pulmonary_bstar_rt bash 
+    docker exec -ti volumetric_rt_mri bash 
 
 and you can simply ou can simply navigate to `/opt/data/` and test the code :
 
@@ -81,7 +81,7 @@ In another terminal session you can monitor the logs from the container
 
 .. code-block:: console
 
-    docker logs -f cardio_pulmonary_bstar_rt`
+    docker logs -f volumetric_rt_mri`
 
 
 Please note that if you are using the gadgetron_ismrmrd_client from outside the container then you may need to specify the server address with **-a SERVER_ADDRESS** and the port **-p 9063**
@@ -94,7 +94,7 @@ Please note that if you are using the gadgetron_ismrmrd_client from outside the 
 Dataset
 -------
 
-The test data can be downloaded from zenodo: `18461603 <https://zenodo.org/records/18461603>`_
+The test data can be downloaded from zenodo: `19005977 <https://zenodo.org/records/19005977>`_
 
 .. note::
     More Information on Gadgetron are available over here : 
