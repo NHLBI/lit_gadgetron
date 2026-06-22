@@ -147,6 +147,9 @@ namespace nhlbi_toolbox
 
             template <typename T>
             cuNDArray<T> crop_to_recondims(cuNDArray<T> &input);
+            
+            template <typename T> 
+            cuNDArray<T> crop_to_recondims_centered(cuNDArray<T> &input);
 
             boost::shared_ptr<cuNFFT_plan<float, D>> nfft_plan_;
             std::vector<size_t> image_dims_;

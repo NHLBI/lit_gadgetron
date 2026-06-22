@@ -48,11 +48,15 @@ namespace {
             /* tSequenceVariant in the header give information about the hash of the pulseq seq file
             Loop through all seq files in a directory and find the correct seq file (hash is in the last line )
             */
+
+            // PK commenting this out ecause the presence of tSequenceVariant is not guaranteed for only bSTAR...
+            /*
             if (header.userParameters) {
                 ISMRMRD::UserParameters user_params = header.userParameters.get();
                 std::vector<ISMRMRD::UserParameterString> strings = user_params.userParameterString;
                 std::vector<ISMRMRD::UserParameterString>::iterator it;
 
+                
                 for (it = strings.begin(); it != strings.end(); ++it) {
                     if (it->name == "tSequenceVariant") {
                         GDEBUG("Hash bstar found %s found\n", it->value.c_str());
@@ -159,9 +163,11 @@ namespace {
                     }
                 }
             }
+            */
             //PD
             header_callback(header);
         }
+        
 
     private:
         std::function<void(Header)> header_callback;

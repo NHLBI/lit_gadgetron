@@ -45,5 +45,6 @@ dependencies:
       - einops
       - wandb
       - onnxruntime-gpu
+      - pyigtl
 
 

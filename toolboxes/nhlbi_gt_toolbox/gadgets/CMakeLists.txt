@@ -17,6 +17,8 @@ utility_gadgets/AcquisitionReconParamsFanout.cpp
 utility_gadgets/AcquisitionStopTimingGadget.cpp
 waveforms/AcquisitionWaveformFanout.cpp
 #waveforms/RemoveAcqsGadget.cpp
+noncart_recon/Spiral_3DRT.cpp
+noncart_recon/Spiral_Rovir.cpp
 )
 
 add_library(nhlbi_gt_gadgets SHARED
