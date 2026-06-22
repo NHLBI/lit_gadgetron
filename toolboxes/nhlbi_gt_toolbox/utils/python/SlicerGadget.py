@@ -15,6 +15,7 @@ def _parse_params(xml):
     return {p.get('name'): p.get('value') for p in xml.iter('property')}
 
 def SlicerGadget(connection):
+    print("STARTING SLICER GADGET")
 
     params = _parse_params(connection.config)
 
@@ -30,7 +31,7 @@ def SlicerGadget(connection):
         frame_discard = 6
     print(f"Frame discard set to: {frame_discard}")
 
-    rep_count = 0
+    rep_count = frame_discard+1 
     rep_buffer = []
     pyigtl.comm.OpenIGTLinkServer.__init__ = patched_init
     igt_server = pyigtl.OpenIGTLinkServer(local_port, local_server=False, iface="0.0.0.0")

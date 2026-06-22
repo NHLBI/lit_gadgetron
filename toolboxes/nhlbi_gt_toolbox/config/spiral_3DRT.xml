@@ -59,21 +59,21 @@
     <execute name="GriddingTCRGadget" target="GriddingTCRGadget" type="python" />
         <!-- <connect port="2000" /> -->
         <configuration>
-            <property name="n_tr_bin" value="100" />
-            <property name="montage" value="True" />
+            <property name="n_tr_bin" value="0" />
+            <property name="montage" value="False" />
             <property name="use_storage_server" value="True" />
             <property name="recompute_dcf" value="False" />
-            <property name="niter" value="18" /> 
+            <property name="niter" value="26" /> 
             <property name="alg_type" value="stcr" /> <!-- tcr/cg/-->
             <property name = "lambdat" value ="0.01" /> 
-            <property name="lambdas" value="0.002"/>
-            <property name="n_rovir_coils" value="6" /> 
+            <property name="lambdas" value="0.005"/>
+            <property name="n_rovir_coils" value="0" /> 
 
 
             <!-- More complicated input parameters (leave them as is unless you know what they effect!!)-->
             <property name="recompute_L" value="True" />
             <property name="time_per_frame_scale" value="0.8" />
-            <property name="max_frame_discard" value="0" />
+            <property name="max_frame_discard" value="6" />
         </configuration>
     </external> 
 
