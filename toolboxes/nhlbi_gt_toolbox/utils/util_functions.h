@@ -137,7 +137,9 @@ namespace nhlbi_toolbox
 
                 cuNDArray<float> padDeformations(cuNDArray<float> deformation, std::vector<size_t> size_deformation);
 
-
+                template <typename T>
+                cuNDArray<T>crop_to_recon_params_dims(cuNDArray<T>& input,reconParams recon_params);
+                
                 constexpr double GAMMA = 4258.0; /* Hz/G */
                 void enable_peeraccess();
 

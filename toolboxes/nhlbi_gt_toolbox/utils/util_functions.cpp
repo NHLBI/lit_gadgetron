@@ -486,7 +486,10 @@ namespace nhlbi_toolbox
             imarray.meta_.resize(N*S*LOC);
         
             auto fov = recon_params.fov;
-            auto rmsize = recon_params.rmatrixSize;
+            auto rmsize = recon_params.rmatrixSize_scanner;
+            if (E0 != rmsize.x || E1!=rmsize.y || E2!=rmsize.z){
+                GDEBUG_STREAM("WARNING Images don't have the expected dimension [E0 E1 E2] =[" << E0 << " " << E1 << " " << E2 <<"] != recon matrix [x y z] =[" << rmsize.x << " " << rmsize.y << " " << rmsize.z <<"]")
+            }
             for (size_t loc = 0; loc < LOC; loc++) {
                 for (size_t s = 0; s < S; s++) {
                     for (size_t n = 0; n < N; n++) {
@@ -500,10 +503,12 @@ namespace nhlbi_toolbox
                         imarray.headers_(n, s, loc).average = acqhdr.idx.average;
                         imarray.headers_(n, s, loc).slice = acqhdr.idx.slice;
                         imarray.headers_(n, s, loc).contrast = acqhdr.idx.contrast;
-                        imarray.headers_(n, s, loc).phase = acqhdr.idx.phase;
+                        imarray.headers_(n, s, loc).phase = n;
                         imarray.headers_(n, s, loc).repetition = acqhdr.idx.repetition;
                         imarray.headers_(n, s, loc).set = acqhdr.idx.set;
                         imarray.headers_(n, s, loc).acquisition_time_stamp = acqhdr.acquisition_time_stamp;
+                        //imarray.headers_(n, s, loc).physiology_time_stamp = acqhdr.physiology_time_stamp;
+                        imarray.headers_(n, s, loc).physiology_time_stamp[0]=(uint32_t)(n*25);
                         imarray.headers_(n, s, loc).position[0] = acqhdr.position[0];
                         imarray.headers_(n, s, loc).position[1] = acqhdr.position[1];
                         imarray.headers_(n, s, loc).position[2] = acqhdr.position[2];
@@ -1209,6 +1214,87 @@ namespace nhlbi_toolbox
             return (permute(tempDef, {0, 1, 3, 2}));
         }
 
+        template <class T>
+        cuNDArray<T> crop_to_recon_params_dims(cuNDArray<T>& input,reconParams recon_params)
+        {
+            cuNDArray<T> output;
+            size_t NDim = input.get_number_of_dimensions();
+            GDEBUG_STREAM("Input dimensions: ");
+            for (size_t i = 0; i < input.get_number_of_dimensions(); ++i) {
+                GDEBUG_STREAM("Dim " << i << ": " << input.get_size(i));
+            }
+            GDEBUG_STREAM("Number of dimensions: " << NDim);
+
+            auto mr_x=recon_params.rmatrixSize_scanner.x;
+            auto mr_y=recon_params.rmatrixSize_scanner.y;
+            auto mr_z=recon_params.rmatrixSize_scanner.z;
+            if (recon_params.rmatrixSize_scanner.z == 1) {
+            
+                switch (NDim) {
+                    case 2:
+                        output.create({mr_x, mr_y});
+                        crop<T, 2>(uint64d2((input.get_size(0) - mr_x) / 2,
+                                            (input.get_size(1) - mr_y) / 2),
+                                uint64d2(mr_x, mr_y), input, output);
+                        break;
+
+                    case 3:
+                        output.create({mr_x, mr_y, input.get_size(2)});
+                        crop<T, 3>(uint64d3((input.get_size(0) - mr_x) / 2,
+                                            (input.get_size(1) - mr_y) / 2,
+                                            0),
+                                uint64d3(mr_x, mr_y, input.get_size(2)),input, output);
+                        break;
+
+                    case 4:
+                        output.create(
+                            {mr_x, mr_y, input.get_size(2), input.get_size(3)});
+                        crop<T, 4>(uint64d4((input.get_size(0) - mr_x) / 2,
+                                            (input.get_size(1) - mr_y) / 2,
+                                            0, 0),
+                                uint64d4(mr_x, mr_y,input.get_size(2), input.get_size(3)),input, output);
+                        break;
+
+                default:
+                    GDEBUG_STREAM("crop_to_recondims is not working, unknow number of dimensions " << NDim);
+                }
+            }else{
+                switch (NDim) {
+                    case 3:
+                        output.create(
+                            {mr_x, mr_y, mr_z});
+                        crop<T, 3>(uint64d3((input.get_size(0) - mr_x) / 2,
+                                            (input.get_size(1) - mr_y) / 2,
+                                            (input.get_size(2) - mr_z) / 2),
+                                uint64d3(mr_x, mr_y, mr_z),input, output);
+                        break;
+
+                    case 4:
+                        output.create({mr_x, mr_y,
+                                    mr_z, input.get_size(3)});
+                        crop<T, 4>(uint64d4((input.get_size(0) - mr_x) / 2,
+                                            (input.get_size(1) - mr_y) / 2,
+                                            (input.get_size(2) - mr_z) / 2, 0),
+                                uint64d4(mr_x, mr_y,mr_z, input.get_size(3)),input, output);
+                        break;
+
+                    case 5:
+                        output.create({mr_x, mr_y,
+                                    mr_z, input.get_size(3), input.get_size(4)});
+                        crop<T, 5>(uint64d5((input.get_size(0) - mr_x) / 2,
+                                            (input.get_size(1) - mr_y) / 2,
+                                            (input.get_size(2) - mr_z) / 2, 0, 0),
+                                uint64d5(mr_x, mr_y,mr_z, input.get_size(3), input.get_size(4)),input, output);
+                        break;
+
+                default:
+                    GDEBUG_STREAM("crop_to_recondims is not working, unknow number of dimensions " << NDim);
+                }
+        }
+        return output;
+        }
+
+
         template hoNDArray<float> std_real(hoNDArray<float> input, unsigned int dim);
         template hoNDArray<float_complext> std_complex(hoNDArray<float_complext> input, unsigned int dim);
         template hoNDArray<std::complex<float>> std_complex(hoNDArray<std::complex<float>> input, unsigned int dim);
@@ -1234,6 +1320,12 @@ namespace nhlbi_toolbox
         template cuNDArray<floatd3> concat(std::vector<cuNDArray<floatd3>> &arrays);
         template cuNDArray<floatd2> concat(std::vector<cuNDArray<floatd2>> &arrays);
         template cuNDArray<float> concat(std::vector<cuNDArray<float>> &arrays);
+
+
+
+        template cuNDArray<float_complext> crop_to_recon_params_dims(cuNDArray<float_complext> & input,reconParams recon_params);
+        template cuNDArray<float> crop_to_recon_params_dims(cuNDArray<float> & input,reconParams recon_params);
+
 
         // template hoNDArray<float_complext> concat(std::vector<hoNDArray<float_complext>> &arrays);
         // template hoNDArray<floatd3> concat(std::vector<hoNDArray<floatd3>> &arrays);

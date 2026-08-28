@@ -66,6 +66,11 @@ set(gadgetron_nhlbi_gt_toolbox_config_files
     config/pulmonary_MOCOLR.xml
     config/cardiovascular_iMOCO.xml
     config/cardiopulmonary_recon.xml
+    config/spiral_3DRT.xml
+    config/spiral_3DRT_CSM.xml
+    config/spiral_3DRT_CSM_test.xml
+    config/spiral_3DRT_test.xml
+    config/imoco_recon_vds.xml
 )
 
 

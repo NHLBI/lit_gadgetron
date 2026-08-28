@@ -1,0 +1,80 @@
+[
+  {
+    "file": "imoco_vds/noise_data.h5",
+    "sha256": "89396f6de4bf248aa9a37335ac086b73dd499773ec1f57c9aba83879b1cc144d",
+    "type": "noise",
+    "test": "imoco_vds"
+  },
+  {
+    "file": "imoco_vds/recon_data.h5",
+    "sha256": "4d1888c4714467cbc4a0f7ccb454275d10596ffcd64b003099fdf6e110e79abf",
+    "type": "input",
+    "test": "imoco_vds"
+  },
+  {
+    "file": "imoco_vds/baseline_output.h5",
+    "sha256": "a3080275eb0b509c917bf8398cad3a19cbff9f5ad5555e99cd2bf5ec4eec410d",
+    "type": "baseline",
+    "test": "imoco_vds",
+    "validated_by": "unknown",
+    "validated_date": "2026-03-19",
+    "git_sha": "d11d8915",
+    "recon_time_seconds": 386.0
+  },
+  {
+    "file": "csm_prescan/noise_data.h5",
+    "sha256": "8afbf9f5b988b110bdc164fba28205dbd1caf062ce8b7681dbc6034a2e8818fb",
+    "type": "noise",
+    "test": "csm_prescan"
+  },
+  {
+    "file": "csm_prescan/recon_data.h5",
+    "sha256": "41dba6a2aff581500c8266bbc24a692d487f3991ca86cce67f68a54bf8a2f18f",
+    "type": "input",
+    "test": "csm_prescan"
+  },
+  {
+    "file": "csm_prescan/baseline_output.h5",
+    "sha256": "20358f20e037ee1310dfeb097904e45ac9b6af686649027e67d55d349d5c4917",
+    "type": "baseline",
+    "test": "csm_prescan",
+    "validated_by": "unknown",
+    "validated_date": "2026-08-12",
+    "git_sha": "f6e3df1",
+    "recon_time_seconds": 56.2
+  },
+  {
+    "file": "3drt/noise_data.h5",
+    "sha256": "b82d79de3cd8e2f489d24b87f6bbcc0f66db3ea63f75a2f83bc2c974d7e14458",
+    "type": "noise",
+    "test": "3drt"
+  },
+  {
+    "file": "3drt/recon_data.h5",
+    "sha256": "6d7125a55eb4c3d9b0b4e8bfd9d2ad793c18d2728afe3a887c6f7d579b723d80",
+    "type": "input",
+    "test": "3drt"
+  },
+  {
+    "file": "3drt/prescan-reference_noise.h5",
+    "sha256": "8afbf9f5b988b110bdc164fba28205dbd1caf062ce8b7681dbc6034a2e8818fb",
+    "type": "additional",
+    "test": "3drt"
+  },
+  {
+    "file": "3drt/prescan-reference.h5",
+    "sha256": "41dba6a2aff581500c8266bbc24a692d487f3991ca86cce67f68a54bf8a2f18f",
+    "type": "additional",
+    "test": "3drt"
+  },
+  {
+    "file": "3drt/baseline_output.h5",
+    "sha256": "130da444d2d368a9f679191d28932a8f023ff684f5dd6319f1d4a06d9600977a",
+    "type": "baseline",
+    "test": "3drt",
+    "validated_by": "unknown",
+    "validated_date": "2026-08-28",
+    "git_sha": "87e65a6",
+    "recon_time_seconds": 42.3
+  }
+]

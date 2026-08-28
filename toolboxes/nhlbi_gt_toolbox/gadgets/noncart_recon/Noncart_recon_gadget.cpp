@@ -205,6 +205,8 @@ class Noncart_recon_gadget
                 allAcq[idx] = std::move(Core::get<Core::Acquisition>(message));
 
                 if ((idx >= int((estimateCSM_perc / 100.0) * maxAcq)) && (!csm_calculated_ && recon_params_received)) {
+                    auto& [headAcq_0, dataAcq_0, trajAcq_0] = allAcq[0];
+                    acqhdr = headAcq_0;
                     GadgetronTimer timer_CSM("Calculating CSM");
                     GadgetronTimer timer_Average("Calculating Average Image");
                     cudaSetDevice(recon_params.selectedDevices[0]);
@@ -225,6 +227,10 @@ class Noncart_recon_gadget
                     }
                     timer_CSM.stop();
                     csm_calculated_ = true;
+                    if (save_csm){
+                        process_and_send_images(*csm, acqhdr, out, series_counter, "CSM", recon_params);
+                        series_counter++;
+                    }
                     if (save_avg) {
                         *channel_images *= *conj(csm.get());
                         auto combined = sum(channel_images.get(), channel_images->get_number_of_dimensions() - 1);
@@ -251,6 +257,8 @@ class Noncart_recon_gadget
 
 
             if (!csm_calculated_){
+                auto& [headAcq_1, dataAcq_1, trajAcq_1] = allAcq[0];
+                acqhdr = headAcq_1;
                 GadgetronTimer timer_CSM("Calculating CSM At the end");
                 GadgetronTimer timer_Average("Calculating Average Image");
                 cudaSetDevice(recon_params.selectedDevices[0]);
@@ -271,6 +279,10 @@ class Noncart_recon_gadget
                 }
                 timer_CSM.stop();
                 csm_calculated_ = true;
+                if (save_csm){
+                    process_and_send_images(*csm, acqhdr, out, series_counter, "CSM", recon_params);
+                    series_counter++;
+                }
                 if (save_avg) {
                     *channel_images *= *conj(csm.get());
                     auto combined = sum(channel_images.get(), channel_images->get_number_of_dimensions() - 1);
@@ -465,6 +477,8 @@ class Noncart_recon_gadget
             } break;
 
             case 4: {
+
+                GadgetronTimer timer_4D_respi("4D Respiratory Recon :");
                 std::vector<size_t> binning_order_respi = {binning_order[1], binning_order[2], binning_order[0]};
                 auto output_collapsed = nhlbi_toolbox::utils::sort_idx_phases(idx_phases_vec, binning_order_respi, true,start_idx_nc);
                 std::vector<std::vector<size_t>> idx_phases_respiratory = std::get<0>(output_collapsed);
@@ -487,9 +501,13 @@ class Noncart_recon_gadget
                 std::vector<cuNDArray<floatd3>> trajVec_respi =reconstruction4D.arraytovector(&traj_respi, number_elements_respi);
                 std::vector<cuNDArray<float>> dcwVec_respi = reconstruction4D.estimate_dcf(&trajVec_respi);
                 auto ave_cuIimages = reconstruction4D.reconstruct(&cuData_respi, &trajVec_respi, &dcwVec_respi, csm,false);
-                process_and_send_images(ave_cuIimages, acqhdr, out, series_counter,
+                // Save respiratory-resolved images 
+                if(save_intermediate_images){
+                    process_and_send_images(ave_cuIimages, acqhdr, out, series_counter,
                                         std::string("4DTresolved") + img_parameters_name, recon_params);
-                series_counter++;
+                    series_counter++;
+                }
+                
                 cuData_respi.clear();
                 trajVec_respi.clear();
                 dcwVec_respi.clear();
@@ -498,12 +516,13 @@ class Noncart_recon_gadget
                 recon_params_adv.shots_per_time = shots_per_time;
                 reconstruction5D.set_recon_params(recon_params_adv);
                 reconstruction->set_recon_params(recon_params);
-
+                /* Verbose
                 for (size_t it = 0; it < shots_per_time.get_number_of_elements(); it++) {
                     GDEBUG_STREAM("it " << it << "SHOTs " << *(shots_per_time.begin() + it));
                     size_t size_phase = (idx_phases[it].size());
                     GDEBUG_STREAM("it " << it << "Phase size " << size_phase);
                 }
+                */
                 std::vector<cuNDArray<floatd3>> trajVec_respi_cardiac =reconstruction5D.arraytovector(&traj_rc, number_elements_rc);
                 std::vector<cuNDArray<float>> dcwVec_respi_cardiac =reconstruction5D.estimate_dcf(&trajVec_respi_cardiac);
                 cuIimages = reconstruction5D.reconstructiMOCO_avg_image(&cuData_All, &trajVec_respi_cardiac, &dcwVec_respi_cardiac, ave_cuIimages, csm, referencePhase);
@@ -573,8 +592,7 @@ class Noncart_recon_gadget
                 std::vector<cuNDArray<floatd3>> trajVec_respi =reconstruction4D.arraytovector(&traj_respi, number_elements_respi);
                 std::vector<cuNDArray<float>> dcwVec_respi = reconstruction4D.estimate_dcf(&trajVec_respi);
                 auto ave_cuIimages = reconstruction4D.reconstructMOCOLR(&cuData_respi, &trajVec_respi, &dcwVec_respi, csm);
-                process_and_send_images(ave_cuIimages, acqhdr, out, series_counter,
-                                        std::string("4DMOCOLR") + img_parameters_name, recon_params);
+                process_and_send_images(ave_cuIimages, acqhdr, out, series_counter,std::string("4DMOCOLR") + img_parameters_name, recon_params);
                 series_counter++;
                 cuData_respi.clear();
                 trajVec_respi.clear();
@@ -638,16 +656,25 @@ class Noncart_recon_gadget
                                  Gadgetron::reconParams& recon_params) {
         size_t NDim = cuImages.get_number_of_dimensions();
         size_t CHA = 1;
+        size_t E0 = cuImages.get_size(0);
+        size_t E1 = cuImages.get_size(1);
+        size_t E2 = cuImages.get_size(2);
+        auto rmsize = recon_params.rmatrixSize_scanner;
+        if (E0 != rmsize.x || E1!=rmsize.y || E2!=rmsize.z){
+                GDEBUG_STREAM("Cropping Images [E0 E1 E2] =[" << E0 << " " << E1 << " " << E2 <<"] != recon matrix [x y z] =[" << rmsize.x << " " << rmsize.y << " " << rmsize.z <<"]")
+                E0=rmsize.x;E1=rmsize.y;E2=rmsize.z;
+            }
+        cuNDArray<float_complext> cuimages_all =nhlbi_toolbox::utils::crop_to_recon_params_dims(cuImages,recon_params);
         size_t N = NDim > 3 ? cuImages.get_size(3) : 1;
         size_t S = NDim > 4 ? cuImages.get_size(4) : 1;
         size_t SLC = NDim > 5 ? cuImages.get_size(5) : 1;
-        GDEBUG_STREAM("CuImage SIZE " << NDim << " [RO E1 E2 CHA N S SLC] = [" << cuImages.get_size(0) << " "
-                                      << cuImages.get_size(1) << " " << cuImages.get_size(2) << " " << CHA << " " << N
+        GDEBUG_STREAM("CuImage SIZE " << NDim << " [RO E1 E2 CHA N S SLC] = [" << E0 << " "
+                                      << E1 << " " << E2 << " " << CHA << " " << N
                                       << " " << S << " " << SLC << "] ");
         IsmrmrdImageArray imarray_sense;
 
         auto images = hoNDArray<std::complex<float>>(
-            std::move(*boost::reinterpret_pointer_cast<hoNDArray<std::complex<float>>>(cuImages.to_host())));
+            std::move(*boost::reinterpret_pointer_cast<hoNDArray<std::complex<float>>>(cuimages_all.to_host())));
         auto tmp = hoNDArray<std::complex<float>>(images);
         tmp.reshape(tmp.get_size(0), tmp.get_size(1), tmp.get_size(2), 1, N, S, SLC);
         imarray_sense.data_ = tmp;
@@ -663,6 +690,23 @@ class Noncart_recon_gadget
                     imarray_sense.headers_(n, s, loc).image_index = offset + 1;
                     imarray_sense.meta_[offset].append(GADGETRON_IMAGECOMMENT, image_comment.c_str());
                     imarray_sense.meta_[offset].append(GADGETRON_SEQUENCEDESCRIPTION, image_comment.c_str());
+                    imarray_sense.meta_[offset].append("ImageRowDir", imarray_sense.headers_(n, s, loc).read_dir[0]);
+                    imarray_sense.meta_[offset].append("ImageRowDir", imarray_sense.headers_(n, s, loc).read_dir[1]);
+                    imarray_sense.meta_[offset].append("ImageRowDir", imarray_sense.headers_(n, s, loc).read_dir[2]);
+                    imarray_sense.meta_[offset].append("ImageColumnDir", imarray_sense.headers_(n, s, loc).phase_dir[0]);
+                    imarray_sense.meta_[offset].append("ImageColumnDir", imarray_sense.headers_(n, s, loc).phase_dir[1]);
+                    imarray_sense.meta_[offset].append("ImageColumnDir", imarray_sense.headers_(n, s, loc).phase_dir[2]);
+                    /*
+                    if (N >1){
+                        imarray_sense.meta_[offset].append("SiemensDicom_NumberInSeries", "long");
+                        imarray_sense.meta_[offset].append("SiemensDicom_NumberInSeries", long(N));
+                        imarray_sense.meta_[offset].append("SiemensDicom_ImageGroup", "long");
+                        imarray_sense.meta_[offset].append("SiemensDicom_ImageGroup", long(N));
+                        imarray_sense.meta_[offset].append("SiemensControl_CardiacRRInterval", "double");
+                        imarray_sense.meta_[offset].append("SiemensControl_CardiacRRInterval", double(N*25));
+                    }
+                    */
+                    
                 }
             }
         }
@@ -738,6 +782,8 @@ class Noncart_recon_gadget
     NODE_PROPERTY(start_idx_nc, float, "With Collapse binning, only subsample NC", 0);
     NODE_PROPERTY(series_counter_initial, int, "series_counter_initial", 0);
     NODE_PROPERTY(save_avg, bool, "Saving Average image", true);
+    NODE_PROPERTY(save_csm, bool, "Saving CSM", false);
+    NODE_PROPERTY(save_intermediate_images, bool, "Saving intermediates image", true);
     NODE_PROPERTY(calculateKPRECOND, bool, "GT DCF of Kspace preconditioning", false);
 };
 

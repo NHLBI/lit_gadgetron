@@ -9,6 +9,7 @@ namespace Gadgetron
         ISMRMRD::MatrixSize ematrixSize;
         ISMRMRD::MatrixSize rmatrixSize;
         ISMRMRD::MatrixSize omatrixSize;
+        ISMRMRD::MatrixSize rmatrixSize_scanner;
         ISMRMRD::FieldOfView_mm fov;
         hoNDArray<size_t> shots_per_time;
         size_t numberChannels;
@@ -24,6 +25,7 @@ namespace Gadgetron
         float oversampling_factor_dcf_ = 2.1;
         int selectedDevice = 0;
         std::vector<int> selectedDevices ;
+        std::vector<int> selectedDevices_solver;
         float lambda_spatial = 1e-1;
         float lambda_spatial_imoco = 1e-1;
         float lambda_time = 1e-1;

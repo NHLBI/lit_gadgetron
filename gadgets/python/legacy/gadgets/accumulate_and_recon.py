@@ -38,7 +38,7 @@ class AccumulateAndRecon(Gadget):
 
         if (acq.flags & (1<<7)): #Is this the last scan in slice
             image = cifftn(self.myBuffer, axes=(0, 1, 2))
-            image = image * np.product(image.shape)*100 #Scaling for the scanner
+            image = image * np.prod(image.shape)*100 #Scaling for the scanner
             #Create a new image header and transfer value
             img_head = ismrmrd.ImageHeader()
             img_head.version = 1

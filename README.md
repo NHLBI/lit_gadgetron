@@ -1,15 +1,12 @@
 
-# “Two-for-one”: 3D cardiac and pulmonary MR imaging from a single acquisition using bSTAR
+# Volumetric real-time MRI for the guidance of cardiac catheterization at 0.55 T
 
-This project is a Gadgetron extension that provides a dual inline image reconstruction pipeline for simultaneous cardiac-resolved whole heart and respiratory-resolved lung imaging.
-
+This project is a Gadgetron extension that provides a inline image reconstruction pipeline for volumetric, stack-of-spirals real-time acquisitions to guide invasive procedures such as right-heart catheterization.
 ## Publication 
 
-This open-source is described in :
+This project is described in :
 
-- Daudé P.,Taylor J., Plummer J., Ramasawmy R., Tsakirellis A., Moss J., Bandettini W.P., Chen M., Campbell-Washburn A.E.,Javed A. “Two-for-one”: 3D cardiac and pulmonary MR imaging from a single acquisition using bSTAR
-. In preparation
-
+- Kumar P., Ramasawmy R., Javed A., Le D., Daudé P., O'Brien K., Jaimes A.E., Franson D., Chow K., Dong F., Maier F., Lederman R.J., Nayak K.S., Campbell-Washburn A.E., “Volumetric real-time MRI for the guidance of cardiac catheterization at 0.55 T". In preparation
 
 ## Documentation
 

@@ -30,7 +30,8 @@ namespace Gadgetron
             calculate_trajectories_and_weight(const ISMRMRD::AcquisitionHeader &acq_header);
             void set_girf_sampling_time(float time);
             void set_acceleration_factor(size_t acc);
-
+            void set_debug_folder(std::string debug_folder);
+            void set_clock_shift(float shift_s);
             void read_girf_kernel(std::string girf_folder);
             hoNDArray<std::complex<float>> get_girf_kernel();
  
@@ -39,6 +40,8 @@ namespace Gadgetron
             double  vds_factor_;
             // custom rotation number
             long    spiral_rotations_;
+
+            
  
         private:
             Core::optional<hoNDArray<std::complex<float>>> girf_kernel;
@@ -52,6 +55,8 @@ namespace Gadgetron
             float TE_;
             size_t acc;
             std::string systemModel;
+            std::string debug_folder_;
+            float clock_shift_s;
  
             hoNDArray<floatd2> correct_gradients(const hoNDArray<floatd2> &gradients, float grad_samp_us,
                                                  float girf_samp_us, const float *read_dir, const float *phase_dir,
