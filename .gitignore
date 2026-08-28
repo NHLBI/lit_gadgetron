@@ -28,6 +28,9 @@ test/integration/*.xprot
 test/integration/*.xml
 .atom-build.json
 #.vscode/
+test/nhlbi_integration_tests/test
+test/nhlbi_integration_tests/baselines
+*.seq
 dep-build/
 stats.csv
 junit.xml

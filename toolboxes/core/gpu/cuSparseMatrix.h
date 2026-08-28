@@ -39,18 +39,26 @@ namespace Gadgetron
 
 		cuCsrMatrix &operator=(cuCsrMatrix &&other)
 		{
+			if (this == &other)
+				return *this;
+			if (this->descr)
+				cusparseDestroySpMat(this->descr);
 			this->descr = other.descr;
 			other.descr = nullptr;
+			this->rows = other.rows;
+			this->cols = other.cols;
+			other.rows = 0;
+			other.cols = 0;
 			this->csrColdnd = std::move(other.csrColdnd);
 			this->csrRow = std::move(other.csrRow);
-			this->data = std::move(this->data);
+			this->data = std::move(other.data);
 			return *this;
 		}
 
-		size_t rows, cols;
+		size_t rows = 0, cols = 0;
 		thrust::device_vector<int> csrRow, csrColdnd;
 		thrust::device_vector<T> data;
-		cusparseSpMatDescr_t descr;
+		cusparseSpMatDescr_t descr = nullptr;
 	};
 
 	/**

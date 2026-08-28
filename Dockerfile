@@ -3,7 +3,7 @@ ARG USERNAME="vscode"
 ARG USER_UID=1000
 ARG USER_GID=1000
 
-FROM ubuntu:22.04 AS gadgetron_baseimage
+FROM ubuntu:24.04 AS gadgetron_baseimage
 LABEL org.opencontainers.image.source=https://github.com/gadgetron/gadgetron
 
 ARG USERNAME
@@ -12,8 +12,12 @@ ARG USER_GID
 ARG HOME=/home/$USERNAME
 
 RUN apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y sudo wget git-core git-lfs rsync curl net-tools libxml2 \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y sudo wget git-core git-lfs rsync curl net-tools libxml2 emacs-nox \
     && apt-get clean
+
+# Remove default ubuntu user (Ubuntu 24.04 ships with UID/GID 1000 taken)
+RUN userdel -r ubuntu 2>/dev/null || true \
+    && groupdel ubuntu 2>/dev/null || true
 
 # Create the user
 RUN groupadd --gid $USER_GID $USERNAME \
@@ -41,20 +45,7 @@ RUN wget --no-hsts --quiet https://github.com/conda-forge/miniforge/releases/dow
     && chmod -R g+w /opt/conda \
     && find /opt -type d | xargs -n 1 chmod g+s
 
-#RUN wget --no-hsts --quiet https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh -O /tmp/miniforge.sh \
-#    && /bin/bash /tmp/miniforge.sh -b -p /opt/conda \
-#    && rm /tmp/miniforge.sh \
-#    && /opt/conda/bin/mamba clean --tarballs --index-cache --packages --yes \
-#    && find /opt/conda -follow -type f -name '*.a' -delete \
-#    && find /opt/conda -follow -type f -name '*.pyc' -delete \
-#    && /opt/conda/bin/mamba clean --force-pkgs-dirs --all --yes  \
-#    && groupadd -r conda --gid ${CONDA_GID} \
-#    && usermod -aG conda ${USERNAME} \
-#    && chown -R :conda /opt/conda \
-#    && chmod -R g+w /opt/conda \
-#    && find /opt -type d | xargs -n 1 chmod g+s
-    
-# Copy environment, which will be filtered for later staged
+# Copy environment
 COPY --chown=$USER_UID:conda environment.yml /tmp/build/
 
 # Create mount points for tests
@@ -76,8 +67,8 @@ ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
 RUN chmod +x /tini
 
 USER root
-RUN mkdir -p /opt/GIRF/
 COPY --chown=$USER_UID:conda toolboxes/nhlbi_gt_toolbox/GIRF/ /opt/GIRF/
+#COPY --chown=$USER_UID:conda toolboxes/nhlbi_gt_toolbox/models_dl/ /opt/models/
 
 FROM gadgetron_baseimage AS gadgetron_dev_cuda
 ARG USER_UID
@@ -85,8 +76,12 @@ ARG HOME
 USER ${USER_UID}
 RUN mkdir -p ${HOME}/.cache/conda/notices && sudo chown -R ${USER_UID}:conda ${HOME}/.cache/conda/notices
 
-RUN grep -v "#.*\<NOFILTER\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
-RUN umask 0002 && /opt/conda/bin/mamba env remove -n gadgetron || true && /opt/conda/bin/mamba env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/mamba clean -afy && sudo chown -R :conda /opt/conda
+RUN umask 0002 && /opt/conda/bin/mamba env remove -n gadgetron || true \
+    && /opt/conda/bin/mamba env create -f /tmp/build/environment.yml \
+    && /opt/conda/bin/mamba clean -afy \
+    && sudo chown -R :conda /opt/conda
+
+
 RUN echo 'export PATH="/opt/conda/envs/gadgetron/nvvm/bin/:$PATH"' >> ${HOME}/.bashrc
 
 
@@ -98,8 +93,7 @@ ARG USER_UID
 ARG HOME
 USER ${USER_UID}
 RUN mkdir -p ${HOME}/.cache/conda/notices && sudo chown -R ${USER_UID}:conda ${HOME}/.cache/conda/notices
-RUN grep -v "#.*\<cuda\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
-RUN umask 0002 && /opt/conda/bin/mamba env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/mamba clean -afy && sudo chown -R :conda /opt/conda
+RUN umask 0002 && /opt/conda/bin/mamba env create -f /tmp/build/environment.yml && /opt/conda/bin/mamba clean -afy && sudo chown -R :conda /opt/conda
 USER root
 
 FROM gadgetron_dev_cuda AS gadgetron_cudabuild
@@ -108,28 +102,16 @@ USER ${USER_UID}
 WORKDIR /opt
 ARG USER_GID=1000
 
-RUN echo "UID=$USER_UID GID=$USER_GID"
-
-RUN sudo chown $USER_UID:$USER_GID /opt && mkdir -p /opt/code/gadgetron && mkdir -p /opt/package 
+RUN sudo chown $USER_UID:$USER_GID /opt && mkdir -p /opt/code/gadgetron && mkdir -p /opt/package
 COPY --chown=$USER_UID:conda . /opt/code/gadgetron/
-
-
-# Ensure NHLBI-GT-Non-Cartesian is inside the build context before building
-#COPY --chown=$USER_UID:conda NHLBI-GT-Non-Cartesian/ /opt/code/NHLBI-GT-Non-Cartesian/
-
 
 ENV CONDA_ENV_PATH=/opt/conda/envs/gadgetron
 RUN echo "export NUMBA_CUDA_ENABLE_PYNVJITLINK=1" >> $CONDA_ENV_PATH/etc/conda/activate.d/env_vars.sh
 
-#COPY --chown=$USER_UID:conda OpticalFlow3d/ /opt/code/OpticalFlow3d/
 RUN . /opt/conda/etc/profile.d/conda.sh && umask 0002 && conda activate gadgetron && \
     sh -x && \
     pip install git+https://github.com/ahsanjav/OpticalFlow3d.git
-    # cd /opt/code/OpticalFlow3d/ && \
-    # pip install -e . 
-    # # && \
-    # pip install numpy==1.23
-    
+
 SHELL ["/bin/bash", "-c"]
 RUN . /opt/conda/etc/profile.d/conda.sh && umask 0002 && conda activate gadgetron && \
     export PATH="/opt/conda/envs/gadgetron/nvvm/bin/:$PATH" && \
@@ -165,28 +147,25 @@ USER ${USER_UID}
 ARG USER_GID=1000
 
 RUN mkdir -p ${HOME}/.cache/conda/notices && sudo chown -R ${USER_UID}:conda ${HOME}/.cache/conda/notices
-RUN grep -v "#.*\<dev\>" /tmp/build/environment.yml > /tmp/build/filtered_environment.yml
-RUN umask 0002 && /opt/conda/bin/mamba env create -f /tmp/build/filtered_environment.yml && /opt/conda/bin/mamba clean -afy && sudo chown -R :conda /opt/conda
 
+# Copy the already-solved conda env from the build stage (eliminates redundant ~20 min conda solve)
+COPY --from=gadgetron_cudabuild --chown=$USER_UID:conda /opt/conda/envs/gadgetron /opt/conda/envs/gadgetron
+
+# Copy build artifacts and entrypoint
 COPY --from=gadgetron_cudabuild --chown=$USER_UID:conda /opt/package /opt/conda/envs/gadgetron/
 COPY --from=gadgetron_cudabuild --chown=$USER_UID:conda /opt/code/gadgetron/docker/entrypoint.sh /opt/
-#RUN mkdir -p /opt/models/
 #COPY --from=gadgetron_cudabuild --chown=$USER_UID:conda /opt/models/ /opt/models/
 
 ENV CONDA_ENV_PATH=/opt/conda/envs/gadgetron
 RUN echo "export NUMBA_CUDA_ENABLE_PYNVJITLINK=1" >> $CONDA_ENV_PATH/etc/conda/activate.d/env_vars.sh
 
-#COPY --chown=$USER_UID:conda OpticalFlow3d/ /opt/code/OpticalFlow3d/
-RUN . /opt/conda/etc/profile.d/conda.sh && umask 0002 && conda activate gadgetron && \
-    sh -x && \
-    pip install git+https://github.com/ahsanjav/OpticalFlow3d.git
-    # cd /opt/code/OpticalFlow3d/ && \
-    # pip install . 
 
-RUN sudo rm -rf /opt/code/
-RUN chmod +x /opt/entrypoint.sh
-RUN sudo mkdir -p /opt/integration-test && sudo chown ${USER_GID}:${USER_UID} /opt/integration-test
+RUN sudo rm -rf /opt/code/ \
+    && chmod +x /opt/entrypoint.sh \
+    && sudo mkdir -p /opt/integration-test \
+    && sudo chown ${USER_GID}:${USER_UID} /opt/integration-test
 COPY --from=gadgetron_cudabuild --chown=$USER_UID:conda /opt/code/gadgetron/test/integration /opt/integration-test/
+COPY --from=gadgetron_cudabuild --chown=$USER_UID:conda /opt/code/gadgetron/test/nhlbi_integration_tests /opt/nhlbi-integration-test/
 ENTRYPOINT [ "/tini", "--", "/opt/entrypoint.sh" ]
 
 # FROM gadgetron_baseimage AS gadgetron_rt_nocuda

@@ -41,7 +41,7 @@ namespace {
             std::string raw_header(read_string_from_stream<uint32_t>(stream));
 
             ISMRMRD::IsmrmrdHeader header{};
-            
+
             //GDEBUG_STREAM("HEADER" << raw_header.c_str());
             ISMRMRD::deserialize(raw_header.c_str(), header);
             //PD
@@ -57,10 +57,17 @@ namespace {
                     if (it->name == "tSequenceVariant") {
                         GDEBUG("Hash bstar found %s found\n", it->value.c_str());
                         std::string hash_bstar=it->value.c_str();
-                        std::string bstar_folder_traj="/opt/data/bstar_traj/";
-                        // Loop through all .seq files in bstar_folder_traj
-                        for (const auto& entry : std::filesystem::directory_iterator(bstar_folder_traj)) {
-                            
+                        // Search for .seq trajectory files in known locations
+                        std::vector<std::string> traj_search_paths = {
+                            "/opt/data/bstar_traj/",
+                            "/opt/nhlbi-integration-test/data/",
+                            "/opt/code/gadgetron_lit/test/nhlbi_integration_tests/data/",
+                        };
+                        bool seq_found = false;
+                        for (const auto& bstar_folder_traj : traj_search_paths) {
+                            if (!std::filesystem::exists(bstar_folder_traj)) continue;
+                            for (const auto& entry : std::filesystem::recursive_directory_iterator(bstar_folder_traj)) {
+
                             if (entry.path().extension()==".seq"){
                                 //Find the hash (Last line of the .seq file)
                                 std::ifstream fin;
@@ -85,23 +92,23 @@ namespace {
                                         }
                                     }
 
-                                    std::string lastLine;            
+                                    std::string lastLine;
                                     std::getline(fin,lastLine);                      // Read the current line
                                     fin.close();
 
                                     // Comparison hash of the data with hash of the .seq file
                                     if(lastLine.find(hash_bstar) != std::string::npos){
                                         GDEBUG_STREAM("Seq file found with hash"<< lastLine);
-                                        
-                                        std::string traj_h5=(bstar_folder_traj +std::string("traj_") + entry.path().stem().string() + std::string(".h5"));
+
+                                        std::string traj_h5=(entry.path().parent_path().string() + std::string("/traj_") + entry.path().stem().string() + std::string(".h5"));
                                         GDEBUG_STREAM("Pulseq trajectory filepath " << traj_h5);
-                                        
+
                                         std::string xml_config;
                                         std::string hdf5_in_group="/dataset";
                                         std::shared_ptr<ISMRMRD::Dataset> ismrmrd_dataset= std::shared_ptr<ISMRMRD::Dataset>(new ISMRMRD::Dataset(traj_h5.c_str(), hdf5_in_group.c_str(), false));
                                         ismrmrd_dataset->readHeader(xml_config);
                                         ISMRMRD::IsmrmrdHeader h_traj;
-                                        
+
                                         ISMRMRD::deserialize(xml_config.c_str(), h_traj);
                                         // MODIFying Header matrixSize and FOV : Only reconSpace.matrixSize/FOV are correct in the trajectory file
                                         auto factor_0r = float((size_t(round(float(h_traj.encoding.front().reconSpace.matrixSize.x) / 32.0))) * 32.0) / float(size_t(h_traj.encoding.front().reconSpace.matrixSize.x));
@@ -109,10 +116,11 @@ namespace {
                                         auto factor_2r = float((size_t(round(float(h_traj.encoding.front().reconSpace.matrixSize.z) / 32.0))) * 32.0) / float(size_t(h_traj.encoding.front().reconSpace.matrixSize.z));
                                         GDEBUG_STREAM("Recon Matrix traj : X " << h_traj.encoding.front().reconSpace.matrixSize.x << " Y " << h_traj.encoding.front().reconSpace.matrixSize.y << " Z " << h_traj.encoding.front().reconSpace.matrixSize.z);
                                         GDEBUG_STREAM("Factor traj : X " << factor_0r << " Y " << factor_1r << " Z " << factor_2r);
-                                        
+
                                         factor_0r = factor_0r == 0 ? 1 : factor_0r;
                                         factor_1r = factor_1r == 0 ? 1 : factor_1r;
                                         factor_2r = factor_2r == 0 ? 1 : factor_2r;
+
                                         GDEBUG_STREAM("Raw Header information :");
                                         GDEBUG_STREAM("Encoded Matrix: X " << header.encoding.front().encodedSpace.matrixSize.x << " Y " << header.encoding.front().encodedSpace.matrixSize.y << " Z " << header.encoding.front().encodedSpace.matrixSize.z);
                                         GDEBUG_STREAM("Recon Matrix: X " << header.encoding.front().reconSpace.matrixSize.x << " Y " << header.encoding.front().reconSpace.matrixSize.y << " Z " << header.encoding.front().reconSpace.matrixSize.z);
@@ -120,13 +128,13 @@ namespace {
                                         GDEBUG_STREAM("Recon FOV: X " << header.encoding.front().reconSpace.fieldOfView_mm.x << " Y " << header.encoding.front().reconSpace.fieldOfView_mm.y << " Z " << header.encoding.front().reconSpace.fieldOfView_mm.z);
                                         GDEBUG_STREAM("Encoding Limits: Encoded step 1 max " << header.encoding.at(0).encodingLimits.kspace_encoding_step_1.get().maximum  << " Encoded step 2 max " << header.encoding.at(0).encodingLimits.kspace_encoding_step_2.get().maximum  );
 
-                                        header.encoding.front().encodedSpace.matrixSize.x=size_t(h_traj.encoding.front().reconSpace.matrixSize.x* factor_0r);
-                                        header.encoding.front().encodedSpace.matrixSize.y=size_t(h_traj.encoding.front().reconSpace.matrixSize.y* factor_1r);
-                                        header.encoding.front().encodedSpace.matrixSize.z=size_t(h_traj.encoding.front().reconSpace.matrixSize.z* factor_2r);
+                                        header.encoding.front().encodedSpace.matrixSize.x=size_t(h_traj.encoding.front().reconSpace.matrixSize.x * factor_0r);
+                                        header.encoding.front().encodedSpace.matrixSize.y=size_t(h_traj.encoding.front().reconSpace.matrixSize.y * factor_1r);
+                                        header.encoding.front().encodedSpace.matrixSize.z=size_t(h_traj.encoding.front().reconSpace.matrixSize.z * factor_2r);
 
-                                        header.encoding.front().reconSpace.matrixSize.x=size_t(h_traj.encoding.front().reconSpace.matrixSize.x* factor_0r);
-                                        header.encoding.front().reconSpace.matrixSize.y=size_t(h_traj.encoding.front().reconSpace.matrixSize.y* factor_1r);
-                                        header.encoding.front().reconSpace.matrixSize.z=size_t(h_traj.encoding.front().reconSpace.matrixSize.z* factor_2r);
+                                        header.encoding.front().reconSpace.matrixSize.x=size_t(h_traj.encoding.front().reconSpace.matrixSize.x * factor_0r);
+                                        header.encoding.front().reconSpace.matrixSize.y=size_t(h_traj.encoding.front().reconSpace.matrixSize.y * factor_1r);
+                                        header.encoding.front().reconSpace.matrixSize.z=size_t(h_traj.encoding.front().reconSpace.matrixSize.z * factor_2r);
 
                                         header.encoding.front().encodedSpace.fieldOfView_mm.x=h_traj.encoding.front().reconSpace.fieldOfView_mm.x;
                                         header.encoding.front().encodedSpace.fieldOfView_mm.y=h_traj.encoding.front().reconSpace.fieldOfView_mm.y;
@@ -138,7 +146,7 @@ namespace {
 
 
                                         // Modifying the header encodingLimits :
-                                        
+
                                         header.encoding.at(0).encodingLimits.kspace_encoding_step_1.get().maximum =h_traj.encoding.front().encodingLimits.kspace_encoding_step_1.get().maximum;
                                         header.encoding.at(0).encodingLimits.kspace_encoding_step_2.get().maximum =h_traj.encoding.front().encodingLimits.segment.get().maximum;
 
@@ -149,12 +157,19 @@ namespace {
                                         GDEBUG_STREAM("Recon FOV: X " << header.encoding.front().reconSpace.fieldOfView_mm.x << " Y " << header.encoding.front().reconSpace.fieldOfView_mm.y << " Z " << header.encoding.front().reconSpace.fieldOfView_mm.z);
                                         GDEBUG_STREAM("Encoding Limits: Encoded step 1 max " << header.encoding.at(0).encodingLimits.kspace_encoding_step_1.get().maximum  << " Encoded step 2 max " << header.encoding.at(0).encodingLimits.kspace_encoding_step_2.get().maximum  );
 
+                                        seq_found = true;
                                         break;
                                     }
                                 }
-                                
-                            }
 
+                            }
+                            if (seq_found) break;
+
+                        }
+                        if (seq_found) break;
+                        }
+                        if (!seq_found) {
+                            GDEBUG_STREAM("Seq file not found in any search path for hash " << hash_bstar);
                         }
                     }
                 }

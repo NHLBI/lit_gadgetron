@@ -131,7 +131,14 @@ void WaveformToTrajectory ::process(
       this->girf_kernel = nhlbi_toolbox::corrections::readGIRFKernel(GIRF_folder + "GIRF_fmax_"); // AJ fix for now
     else
       this->girf_kernel = nhlbi_toolbox::corrections::readGIRFKernel(GIRF_folder + "GIRF"); // Read GIRF Kernel from file
- 
+  
+  
+  // Set clock shift for GIRF correction
+  trajParams.set_clock_shift(this->clock_shift_s);
+  
+  // Set debug folder for writing out waveforms and trajectories if set
+  trajParams.set_debug_folder(this->debug_folder);
+
   // Extract sampling time from the sequence
   ISMRMRD::TrajectoryDescription traj_desc;
  
@@ -161,6 +168,9 @@ void WaveformToTrajectory ::process(
   }
  
   {
+    GDEBUG_STREAM("WaveformToTrajectory: GIRF parameters: perform_GIRF:" << perform_GIRF << " GIRF_folder:" << GIRF_folder << " GIRF_samplingtime:" << GIRF_samplingtime << "clock shift" << clock_shift_s);
+    GDEBUG_STREAM("Trajectory generation parameters: generateTraj:" << generateTraj << " attachWaveform" << attachWaveform << " realTime:" << realTime <<" acceleration_factor:" << acceleration_factor);
+    GDEBUG_STREAM(" setPre:" << setPre << " pre_cutoff_manual:" << pre_cutoff_manual << " crop_index_st:" << crop_index_st);
     GadgetronTimer timer("WaveformToTrajectory");
     // #pragma omp parallel
     // #pragma omp for
@@ -237,7 +247,8 @@ void WaveformToTrajectory ::process(
                 GDEBUG_STREAM("rotations:" <<rotations);
                 GDEBUG_STREAM("ksp1.size():" <<ksp1.size());
                 GDEBUG_STREAM("matrixsize.z:" <<matrixsize.z);
-
+                GDEBUG_STREAM("shots_per_frame:" <<shots_per_frame);
+                GDEBUG_STREAM("set_shots_per_frame:" <<set_shots_per_frame);
                 if (perform_GIRF) // && trajParams.get_girf_kernel().get_number_of_elements() == 0)
                 {
                   if (strstr(str_model, "MAGNETOM eMeRge-XL"))
@@ -249,7 +260,17 @@ void WaveformToTrajectory ::process(
                     trajParams.read_girf_kernel(GIRF_folder + "GIRF");
                   trajParams.set_girf_sampling_time(GIRF_samplingtime);
                 }
-                trajParams.set_acceleration_factor(rotations / shots_per_frame);
+
+                if (!set_shots_per_frame){
+                  auto spirals_rot=trajParams.spiral_rotations_;
+                  GDEBUG_STREAM("Setting spiral rotations:" << spirals_rot  <<" to " <<rotations);
+                  trajParams.spiral_rotations_=long(rotations);
+                  trajParams.set_acceleration_factor(1);
+                }else{
+
+                  trajParams.set_acceleration_factor(rotations / shots_per_frame);
+                }
+                
                 GadgetronTimer timer("Trajectory Gen:");
                 tw_gen = trajParams.calculate_trajectories_and_weight(head);
                 traj_not_generated = false;
@@ -299,39 +320,12 @@ void WaveformToTrajectory ::process(
             trajectory_and_weights = traj_dcw;
             for (int ii = 0; ii < trajectory_and_weights.get_size(1); ii++)
             {
-              trajectory_and_weights(0, ii) = traj_dcw(0, ii);
-              trajectory_and_weights(1, ii) = traj_dcw(1, ii);
+              trajectory_and_weights(0, ii) = (traj_dcw(0, ii)> 0.5f) ? 0.5f : ((traj_dcw(0, ii) < -0.5f) ? -0.5f : traj_dcw(0, ii));
+              trajectory_and_weights(1, ii) = (traj_dcw(1, ii)> 0.5f) ? 0.5f : ((traj_dcw(1, ii) < -0.5f) ? -0.5f : traj_dcw(1, ii));
               trajectory_and_weights(2, ii) = traj_dcw(2, ii);
-              size_t num = 0;
-              if (abs(trajectory_and_weights(0, ii)) > 0.5f || abs(trajectory_and_weights(1, ii)) > 0.5f)
+              if ((this->header.encoding.front().encodedSpace.matrixSize.z > 1)) // is  3D
               {
-                if (ii == 0)
-                  GERROR("To Prevent recon failure setting to ±0.5 \n");
- 
-                if (trajectory_and_weights(0, ii) > 0.5)
-                {
-                  // GDEBUG_STREAM(" trajectory_and_weights(0, ii):" << trajectory_and_weights(0, ii));
- 
-                  trajectory_and_weights(0, ii) = 0.5;
-                }
-                else if (trajectory_and_weights(0, ii) < -0.5)
-                {
-                  // GDEBUG_STREAM(" trajectory_and_weights(0, ii):" << trajectory_and_weights(0, ii));
- 
-                  trajectory_and_weights(0, ii) = -0.5;
-                }
-                if (trajectory_and_weights(1, ii) > 0.5)
-                {
-                  // GDEBUG_STREAM(" trajectory_and_weights(1, ii):" << trajectory_and_weights(1, ii));
-                  trajectory_and_weights(1, ii) = 0.5;
-                }
-                else if (trajectory_and_weights(1, ii) < -0.5)
-                {
-                  // GDEBUG_STREAM(" trajectory_and_weights(1, ii):" << trajectory_and_weights(1, ii));
- 
-                  trajectory_and_weights(1, ii) = -0.5;
-                }
-                num++;
+                trajectory_and_weights(3, ii) = traj_dcw(3, ii);
               }
             }
             if (head.discard_pre == 0 && setPre)
@@ -386,38 +380,14 @@ void WaveformToTrajectory ::process(
             trajectory_and_weights.fill(0.0);
             for (int ii = 0; ii < trajectory_and_weights.get_size(1); ii++)
             {
-              trajectory_and_weights(0, ii) = temp(0, ii);
-              trajectory_and_weights(1, ii) = temp(1, ii);
+              trajectory_and_weights(0, ii) = (temp(0, ii)> 0.5f) ? 0.5f : ((temp(0, ii) < -0.5f) ? -0.5f : temp(0, ii)); // need to clip to 0.5 to prevent recon failure  
+              trajectory_and_weights(1, ii) = (temp(1, ii)> 0.5f) ? 0.5f : ((temp(1, ii) < -0.5f) ? -0.5f : temp(1, ii)); // need to clip to 0.5 to prevent recon failure  
               trajectory_and_weights(2, ii) = temp(2, ii);
-              if (!perform_GIRF) // only do this if not doing apply girf else apply girf takes care of this
-              {
-                size_t num = 0;
-                if (abs(trajectory_and_weights(0, ii)) > 0.5f || abs(trajectory_and_weights(1, ii)) > 0.5f)
-                {
-                  if (ii == 0)
-                    GERROR("To Prevent recon failure setting to ±0.5 \n");
- 
-                  if (trajectory_and_weights(0, ii) > 0.5f)
-                  {
-                    trajectory_and_weights(0, ii) = 0.5f;
-                  }
-                  else if (trajectory_and_weights(0, ii) < -0.5f)
-                  {
-                    trajectory_and_weights(0, ii) = -0.5f;
-                  }
-                  if (trajectory_and_weights(1, ii) > 0.5f)
-                  {
-                    trajectory_and_weights(1, ii) = 0.5f;
-                  }
-                  else if (trajectory_and_weights(1, ii) < -0.5f)
-                  {
-                    trajectory_and_weights(1, ii) = -0.5f;
-                  }
-                  num++;
-                }
-              }
+
               if (header.encoding.front().encodedSpace.matrixSize.z > 1)
                 trajectory_and_weights(3, ii) = temp(3, ii);
+                auto zencoding = float(-0.5 + head.idx.kspace_encode_step_2 * 1 / ((float)header.encoding.front().encodedSpace.matrixSize.z));
+                trajectory_and_weights(2,ii) = zencoding;
             }
  
             if (perform_GIRF) // do_girf
@@ -526,7 +496,7 @@ void WaveformToTrajectory::prepare_trajectory_from_waveforms(Core::Waveform &gra
   auto gradients_interpolated = zeroHoldInterpolation(gradients, upsampleFactor);
  
   if (perform_GIRF)
-    gradients_interpolated = nhlbi_toolbox::corrections::girf_correct(gradients_interpolated, this->girf_kernel, rotation_matrix, 2e-6, 10e-6, 0.85e-6);
+    gradients_interpolated = nhlbi_toolbox::corrections::girf_correct(gradients_interpolated, this->girf_kernel, rotation_matrix, 2e-6, this->GIRF_samplingtime, this->clock_shift_s);
  
   auto zencoding = float(-0.5 + head.idx.kspace_encode_step_2 * 1 / ((float)this->header.encoding.front().encodedSpace.matrixSize.z));
   trajectory_and_weights(0, 0) = (gradients_interpolated(0)[0]) * GAMMA * 10 * head.sample_time_us * 1e-6 * kspace_scaling;
@@ -675,7 +645,7 @@ void WaveformToTrajectory::applyGIRF(hoNDArray<float> &trajectory_and_weights, I
     auto dcw_sep = std::move(*std::get<1>(traj_dcw).get());
  
     auto gradients = nhlbi_toolbox::utils::traj2grad_3D2D(traj_sep, kspace_scaling, head);
-    gradients = nhlbi_toolbox::corrections::girf_correct(gradients, girf_kernel, rotation_matrix, head.sample_time_us * 1e-6, 10e-6, 0.85e-6);
+    gradients = nhlbi_toolbox::corrections::girf_correct(gradients, girf_kernel, rotation_matrix, head.sample_time_us * 1e-6, this->GIRF_samplingtime, this->clock_shift_s);
  
     auto zencoding = float(-0.5 + head.idx.kspace_encode_step_2 * 1 / ((float)header.encoding.front().encodedSpace.matrixSize.z));
     trajectory_and_weights(0, 0) = (gradients(0)[0]) * GAMMA * 10 * head.sample_time_us * 1e-6 * kspace_scaling;
@@ -724,7 +694,7 @@ void WaveformToTrajectory::applyGIRF(hoNDArray<float> &trajectory_and_weights, I
     auto dcw_sep = std::move(*std::get<1>(traj_dcw).get());
  
     auto gradients = nhlbi_toolbox::utils::traj2grad(traj_sep, kspace_scaling, head);
-    gradients = nhlbi_toolbox::corrections::girf_correct(gradients, girf_kernel, rotation_matrix, head.sample_time_us * 1e-6, 10e-6, 0.85e-6);
+    gradients = nhlbi_toolbox::corrections::girf_correct(gradients, girf_kernel, rotation_matrix, head.sample_time_us * 1e-6, this->GIRF_samplingtime, this->clock_shift_s);
 
     trajectory_and_weights(0, 0) = (gradients(0)[0]) * GAMMA * 10 * head.sample_time_us * 1e-6 * kspace_scaling;
     trajectory_and_weights(1, 0) = (gradients(0)[1]) * GAMMA * 10 * head.sample_time_us * 1e-6 * kspace_scaling;

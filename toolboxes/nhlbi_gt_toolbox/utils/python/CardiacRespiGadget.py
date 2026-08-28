@@ -71,17 +71,18 @@ def CardiacRespiGadget(connection):
             "C_smoothing": True,
             "C_numBins_to_ms":False,
             "C_waveforms":False,
+            "RC_enforced_1_echo":False,
             }
     BPfilter_freqs=   [0.08,0.1,0.45,0.50]
     boolean_keys=['phantom','gaussian','bstar','useDC','C_PHYSIO','R_stableBinning','R_evenbins','R_bidirectional','R_angular_filteration','R_binningPercent',
-    'C_evenbins','C_arrythmia_detection','C_angular_filteration','C_HRinfo','C_even_timing','C_smoothing','C_numBins_to_ms','C_stableBinning','C_waveforms']
+    'C_evenbins','C_arrythmia_detection','C_angular_filteration','C_HRinfo','C_even_timing','C_smoothing','C_numBins_to_ms','C_stableBinning','C_waveforms','RC_enforced_1_echo']
     str_keys=[]
     int_keys=['R_numBins','C_numBins','R_binningPercent','C_binningPercent','samples']
     
     params=read_params(params_init,params_ref=params,boolean_keys=boolean_keys,str_keys=str_keys,int_keys=int_keys)
     if params['C_PHYSIO'] and params['C_waveforms']:
         connection.filter(lambda input: type(input)==mrd.Acquisition or type(input)==mrd.Waveform)
-        print("Receiving Waveforms")
+        eprint("Receiving Waveforms")
     else:
         connection.filter(lambda input: type(input)==mrd.Acquisition)
     gaussian_flag=params['gaussian']
@@ -103,6 +104,10 @@ def CardiacRespiGadget(connection):
 
     encoding_limits = mrd_header.encoding[0].encodingLimits
     number_of_sets=encoding_limits.set.maximum+1
+    # Enforcing the binning one echoe time
+    if params['RC_enforced_1_echo']:
+        number_of_sets=1
+        
     mz=mrd_header.encoding[0].encodedSpace.matrixSize.z
     ecg_data = []
     ecg_tstamp = []
@@ -181,7 +186,7 @@ def CardiacRespiGadget(connection):
     
     
     if gaussian_flag:
-        print("3D cine: 1 sample every 3 samples")
+        eprint("3D cine: 1 sample every 3 samples")
         nav_data=nav_data[:,1::3,:]
         nav_tstamp=nav_tstamp[1::3]
 
@@ -211,11 +216,11 @@ def CardiacRespiGadget(connection):
 
 
     #Respiratory binning
-    print (f"Respiratory Binning Nbins {numRBins} stable {params['R_stableBinning']} bidirectionnal {params['R_bidirectional']}")
-    print(f'DATA {nav_data_copy.shape}')
-    print(f'Tstamp {nav_tstamp_copy.shape}')
+    eprint (f"Respiratory Binning Nbins {numRBins} stable {params['R_stableBinning']} bidirectionnal {params['R_bidirectional']}")
+    eprint(f'DATA {nav_data_copy.shape}')
+    eprint(f'Tstamp {nav_tstamp_copy.shape}')
     if numRBins==1 and params["R_stableBinning"]==False:
-        print("No respiratory binning")
+        eprint("No respiratory binning")
         idx_acceptedTimes=[np.arange(len(nav_tstamp_copy))]
         acceptedTimes=[nav_tstamp_copy.squeeze()]
     else:
@@ -228,7 +233,7 @@ def CardiacRespiGadget(connection):
         eprint('Execution time (GatingSignal):', elapsed_time, 'seconds')
 
         acceptedTimes,idx_acceptedTimes = binning(respiratory_waveform,nav_tstamp_copy.get(),params['R_binningPercent'],params['R_bidirectional'], params['R_stableBinning'], params['R_evenbins'], numRBins)
-    if bstar_flag and params['samples']==1:
+    if (bstar_flag and params['samples']==1) or (bstar_flag and params['samples']==2):
         resp_bins_index=[]
         for idx_a in idx_acceptedTimes:
             idx_a.sort()
@@ -237,9 +242,13 @@ def CardiacRespiGadget(connection):
         resp_bins_index,maxSize=get_idx_to_send(acq_tstamp,acceptedTimes, samplingTime)
 
     # Cardiac binning
-    print (f"Cardiac Binning Nbins {numCBins} PHYSIO {params['C_PHYSIO']} Nbinorms {params['C_numBins_to_ms']}")
+    eprint (f"Cardiac Binning Nbins {numCBins} PHYSIO {params['C_PHYSIO']} Nbinorms {params['C_numBins_to_ms']}")
     if params['C_PHYSIO']:
         nav_tstamp=cp.array(ecg_tstamp)
+        eprint("nav_tstamp before",nav_tstamp.shape)
+        if bstar_flag:
+           nav_tstamp=nav_tstamp[::params['samples']]
+           eprint("nav_tstamp after",nav_tstamp.shape)
         if params["C_waveforms"]:
             waveform_np=np.concatenate(waveform_data,1)
             waveform_t_np = np.concatenate(waveform_timestamp,0)
@@ -261,14 +270,19 @@ def CardiacRespiGadget(connection):
             cardiac_waveform_smooth = np.interp(2.5*nav_tstamp.get(), waveform_t_np, ecgtrigger)[None,:]
         else:
             cardiac_waveform_smooth=np.array(ecg_data)[:,:,0]
+            eprint("cardiac_waveform_smooth before",cardiac_waveform_smooth.shape)
+            if bstar_flag:
+                cardiac_waveform_smooth=cardiac_waveform_smooth[::params['samples'],:] 
+        eprint("cardiac_waveform_smooth after",cardiac_waveform_smooth.shape)
+                
         
     if ((numCBins==1 and params['C_numBins_to_ms']==False) and params["C_stableBinning"]==False):
-        print("No Cardiac binning")
+        eprint("No Cardiac binning")
         bins_index=[np.arange(len(nav_tstamp.squeeze()))]
         C_acceptedTimes=[nav_tstamp.squeeze()]
     else :
         if (params["C_stableBinning"]==True and numCBins>1):
-            print("Stable Binning : Modifying number of cardiac bins")
+            eprint("Stable Binning : Modifying number of cardiac bins")
             numCBins=1
             params['C_numBins_to_ms']=False
             
@@ -295,7 +309,7 @@ def CardiacRespiGadget(connection):
                 cardiac_waveform_smooth = cardiac_waveform
         bins_index,ecg_freq_final=cardiacbinning(cardiac_waveform_smooth,samplingTime,numCBins,ecg_freq,evenbins=params['C_evenbins'],phantomflag=params['phantom'],arrythmia_detection=params['C_arrythmia_detection'],even_timing=params["C_even_timing"],stable_binning=params['C_stableBinning'],stable_perc=params['C_binningPercent'])
         C_Index=np.arange(len(nav_tstamp.squeeze()))
-        print(len(C_Index))
+        eprint(len(C_Index))
         C_acceptedTimes=[]
         for set in range(number_of_sets):
             for nbin in range(len(bins_index)):
@@ -329,15 +343,15 @@ def CardiacRespiGadget(connection):
     imageSize = maxSize #pow(2,math.ceil(math.log2(math.sqrt(maxSize))))
     max_nchannels=(np.power(2,16)-1) #Bug nchannels in Image Header is a np.uint16 (max value =65535)
     if np.prod([imageSize, numRBins,numCBins,number_of_sets])==imageSize and imageSize>max_nchannels :
-        print("Carefull too much data in each bins, required to collapse Respiratory dimension !!!")
+        eprint("Carefull too much data in each bins, required to collapse Respiratory dimension !!!")
         numRBins=int(np.ceil(imageSize/(max_nchannels-1)))
         maxSize=max_nchannels-1
         idx_0=idx_to_send_2D[0][1:]
         idx_to_send_2D = []
         for idx_r in range(numRBins):
-            print(idx_r)
-            print(idx_r*max_nchannels)
-            print(np.min([max_nchannels*(idx_r+1),len(idx_0)]))
+            eprint(idx_r)
+            eprint(idx_r*max_nchannels)
+            eprint(np.min([max_nchannels*(idx_r+1),len(idx_0)]))
             tmp_idx=idx_0[idx_r*maxSize:np.min([maxSize*(idx_r+1),len(idx_0)])]
             idx_to_send_2D.append( np.concatenate( ([tmp_idx.shape[0]],tmp_idx)))
         imageSize=max_nchannels
@@ -357,5 +371,3 @@ def CardiacRespiGadget(connection):
     
 if __name__ == '__main__':
     gadgetron.external.listen(2000,CardiacRespiGadget)
-    
-    

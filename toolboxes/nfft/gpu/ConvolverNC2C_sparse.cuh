@@ -149,19 +149,19 @@ void check_csrMatrix(cuCsrMatrix<T > &matrix)
 
 template<class T, unsigned int D, template<class, unsigned int> class K>
 cuCsrMatrix<T> make_conv_matrix(
-	const thrust::device_vector<vector_td<realType_t<T>,D>> &points, 
-	const vector_td<size_t,D>& image_dims, 
-	const ConvolutionKernel<realType_t<T>, D, K>* kernel)
+	const thrust::device_vector<vector_td<realType_t<T>,D>> &points,
+	const vector_td<size_t,D>& image_dims,
+	const ConvolutionKernel<realType_t<T>, D, K>* d_kernel,
+	realType_t<T> radius)
 {
 	auto csrRow = thrust::device_vector<int>(points.size()+1);
 	csrRow[0] = 0;
 	CHECK_FOR_CUDA_ERROR();
 
-	realType_t<T> radius = kernel->get_radius();
 	{
 		thrust::device_vector<int> c_p_s(points.size());
 		thrust::transform(points.begin(), points.end(), c_p_s.begin(),
-			compute_num_cells_per_sample<realType_t<T>,D>(kernel->get_radius()));
+			compute_num_cells_per_sample<realType_t<T>,D>(radius));
 
 		thrust::inclusive_scan( c_p_s.begin(), c_p_s.end(), csrRow.begin()+1, thrust::plus<int>()); // prefix sum
 
@@ -183,11 +183,11 @@ cuCsrMatrix<T> make_conv_matrix(
 		thrust::raw_pointer_cast(csrRow.data()),
 		thrust::raw_pointer_cast(data.data()),
 		thrust::raw_pointer_cast(csrColdnd.data()),
-		vector_td<int,D>(image_dims), points.size(),kernel);
+		vector_td<int,D>(image_dims), points.size(),d_kernel);
 	cudaDeviceSynchronize();
 	CHECK_FOR_CUDA_ERROR();
 
-	cuCsrMatrix<T> matrix(prod(image_dims), points.size(),std::move(csrRow),std::move(csrColdnd),std::move(data));
+	cuCsrMatrix<T> matrix(points.size(), prod(image_dims),std::move(csrRow),std::move(csrColdnd),std::move(data));
 	return matrix;
 }
 

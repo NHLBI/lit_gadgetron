@@ -117,8 +117,12 @@ public:
         recon_params.gcc_coils = gcc_coils;
 
         recon_params.selectedDevice = selectedGPUs[0];
-        recon_params.selectedDevices = selectedGPUs;
-
+        recon_params.selectedDevices_solver = selectedGPUs;
+        if(minGPU_utilization){
+            recon_params.selectedDevices = {selectedGPUs[0]};
+        }else{
+            recon_params.selectedDevices = selectedGPUs;
+        }
         recon_params.try_channel_gridding=try_channel_gridding;
 
 
@@ -162,9 +166,14 @@ public:
         auto mr_y=size_t(ceil((matOSP_vector[1]*mr_dy)/warp_vector[1]))*warp_vector[1];
         auto mr_z=size_t(ceil((matOSP_vector[2]*mr_dz)/warp_vector[2]))*warp_vector[2];
 
+        auto mr_x_scanner = size_t(ceil(scannerOSP_vector[0]*mr_dx));
+        auto mr_y_scanner = size_t(ceil(scannerOSP_vector[1]*mr_dy));
+        auto mr_z_scanner = size_t(ceil(scannerOSP_vector[2]*mr_dz));
+
         if (recon_params.ematrixSize.z ==1 && recon_params.rmatrixSize.z ==1){
             auto mr_z=1;
             auto me_z=1;
+            auto mr_z_scanner=1;
         }
 
         recon_params.ematrixSize.x = me_x;
@@ -174,14 +183,21 @@ public:
         recon_params.rmatrixSize.x = mr_x;
         recon_params.rmatrixSize.y = mr_y;
         recon_params.rmatrixSize.z = mr_z;
+
+        recon_params.rmatrixSize_scanner.x = mr_x_scanner;
+        recon_params.rmatrixSize_scanner.y = mr_y_scanner;
+        recon_params.rmatrixSize_scanner.z = mr_z_scanner;
         
+
+
         recon_params.fov = this->header.encoding.front().encodedSpace.fieldOfView_mm;
-        recon_params.fov.x=recon_params.fov.x*(mr_x/mr_dx);
-        recon_params.fov.y=recon_params.fov.y*(mr_y/mr_dy);
-        recon_params.fov.z=recon_params.fov.z*(mr_z/mr_dz);
+        recon_params.fov.x=recon_params.fov.x*(mr_x_scanner/mr_dx);
+        recon_params.fov.y=recon_params.fov.y*(mr_y_scanner/mr_dy);
+        recon_params.fov.z=recon_params.fov.z*(mr_z_scanner/mr_dz);
 
         GDEBUG_STREAM("Encoded Matrix: X " << recon_params.ematrixSize.x  << " Y " << recon_params.ematrixSize.y << " Z " << recon_params.ematrixSize.z );
         GDEBUG_STREAM("Recon Matrix: X " << recon_params.rmatrixSize.x << " Y " << recon_params.rmatrixSize.y << " Z " << recon_params.rmatrixSize.z);
+        GDEBUG_STREAM("Recon Matrix scanner: X " << recon_params.rmatrixSize_scanner.x << " Y " << recon_params.rmatrixSize_scanner.y << " Z " << recon_params.rmatrixSize_scanner.z);
         GDEBUG_STREAM("Recon FOV: X " << recon_params.fov.x << " Y " << recon_params.fov.y << " Z " << recon_params.fov.z);
 
         
@@ -201,6 +217,11 @@ public:
         recon_params_avg.omatrixSize.y =recon_params.omatrixSize.y;
         recon_params_avg.omatrixSize.z =recon_params.omatrixSize.z;
 
+        recon_params_avg.rmatrixSize_scanner.x =recon_params.rmatrixSize_scanner.x;
+        recon_params_avg.rmatrixSize_scanner.y =recon_params.rmatrixSize_scanner.y;
+        recon_params_avg.rmatrixSize_scanner.z =recon_params.rmatrixSize_scanner.z;
+
+
         //FOV
         recon_params_avg.fov.x =recon_params.fov.x;
         recon_params_avg.fov.y =recon_params.fov.y;
@@ -209,10 +230,18 @@ public:
         GDEBUG_STREAM("AVERAGE RECON PARAMS" )
         GDEBUG_STREAM("Encoded Matrix: X " << recon_params_avg.ematrixSize.x  << " Y " << recon_params_avg.ematrixSize.y << " Z " << recon_params_avg.ematrixSize.z );
         GDEBUG_STREAM("Recon Matrix: X " << recon_params_avg.rmatrixSize.x << " Y " << recon_params_avg.rmatrixSize.y << " Z " << recon_params_avg.rmatrixSize.z);
+        GDEBUG_STREAM("Recon Matrix scanner: X " << recon_params_avg.rmatrixSize_scanner.x << " Y " << recon_params_avg.rmatrixSize_scanner.y << " Z " << recon_params_avg.rmatrixSize_scanner.z);
         GDEBUG_STREAM("Recon FOV: X " << recon_params_avg.fov.x << " Y " << recon_params_avg.fov.y << " Z " << recon_params_avg.fov.z);
-
-        
-
+        /*
+        std::ostringstream str_lambda_spatial,str_lambda_time;
+        str_lambda_spatial << std::scientific << std::setprecision(2) << recon_params.lambda_spatial;
+        str_lambda_time << std::scientific << std::setprecision(2) << recon_params.lambda_time;
+        std::string img_parameters_name = std::string("r") + std::string("_ite_") +
+                                              std::to_string(recon_params.iterations) + std::string("_ls_") +
+                                              str_lambda_spatial.str() + std::string("_lt") +
+                                              str_lambda_time.str();
+        GDEBUG_STREAM("IMAGE_NAME"<<img_parameters_name);
+        */
         //NUFFT parameters
         recon_params_avg.oversampling_factor_ = oversampling_factor;
         recon_params_avg.kernel_width_ = kernel_width;
@@ -227,8 +256,12 @@ public:
         recon_params_avg.gcc_coils = gcc_coils;
 
         recon_params_avg.selectedDevice = selectedGPUs[0];
-        recon_params_avg.selectedDevices = selectedGPUs;
-
+        recon_params_avg.selectedDevices_solver = selectedGPUs;
+        if(minGPU_utilization){
+            recon_params_avg.selectedDevices = {selectedGPUs[0]};
+        }else{
+            recon_params_avg.selectedDevices = selectedGPUs;
+        }
         recon_params_avg.try_channel_gridding=try_channel_gridding;
         GDEBUG_STREAM("CHANNEL GRIDDING " << recon_params_avg.try_channel_gridding << " " << recon_params.try_channel_gridding);
         size_t RO = 0;
@@ -379,6 +412,7 @@ protected:
     NODE_PROPERTY(matOSP_vector, std::vector<float>, "Large FOV factor",(std::vector<float>{ 1, 1, 1})); // Vector of scaling factors for large Field Of View (FOV) 
     NODE_PROPERTY(downsampling_vector, std::vector<float>, "Downsampling factor plane(x,y) and z)",(std::vector<float>{ 1, 1})); // Downsampling factors for plane (x, y) and z dimension
     NODE_PROPERTY(warpCUDA_vector, std::vector<bool>, "Warp CUDA (32)",(std::vector<bool>{ true, true, false})); // Flags for respecting CUDA  size of warp ( matrix x,y,z should be a multiple of 32)
+    NODE_PROPERTY(scannerOSP_vector, std::vector<float>, "FOV factor for reconstruction on the scanner",(std::vector<float>{ 1, 1, 1})); // Vector of scaling factors for Field Of View (FOV) reconstructed on the scanner 
 
     NODE_PROPERTY(is3D, bool, "is 3D not stack of 2D", false); // Flag indicating if data is 3D non cartesian (not a stack of stars, spirals)
     //NUFFT parameters
@@ -415,6 +449,7 @@ protected:
     NODE_PROPERTY(use_gcc, bool, "use_gcc", false); // Flag to use GCC calibration
     NODE_PROPERTY(gcc_coils, size_t, "gcc_coils", 6); // Number of coils for GCC calibration
     NODE_PROPERTY(selectedDevices_STR, std::string, "String list of GPU device (0-N:device i, -1 : let GT choose, -2: No Device)", "-1 -2"); // String for selecting GPU devices
+    NODE_PROPERTY(minGPU_utilization, bool, "Only use multiple GPUs for solver",false); // Flag to use multiple GPUs only for the solver part of the reconstruction 
     //NODE_PROPERTY(repeated_GPUs, unsigned int, "Repeat eligible GPUs x times",1);
     NODE_PROPERTY(maxIteRegistration, int, "Number of Iterations with estimation registration", 0); // Number of iterations for registration with estimation
     NODE_PROPERTY(try_channel_gridding, bool, "try_gridding over all channels", true); // Flag to enable  gridding over all channels

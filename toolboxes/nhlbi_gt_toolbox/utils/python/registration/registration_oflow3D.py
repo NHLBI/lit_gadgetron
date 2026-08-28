@@ -1,6 +1,9 @@
 import warnings
 warnings.filterwarnings("ignore")
 #import cv2
+import contextlib
+import io
+import os
 import opticalflow3D
 import cupy as cp
 from cupyx.scipy.ndimage import map_coordinates, zoom
@@ -9,6 +12,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import gc
 import torch
+
+
+def _quiet_calculate_flow(farneback, *args, **kwargs):
+    """Call farneback.calculate_flow with stdout suppressed."""
+    with open(os.devnull, 'w') as devnull:
+        with contextlib.redirect_stdout(devnull):
+            return farneback.calculate_flow(*args, **kwargs)
 
 # from numba import config
 # config.CUDA_ENABLE_MINOR_VERSION_COMPATIBILITY = True
@@ -46,9 +56,10 @@ def register_images_only_deformation(input_images, ref_index, filter_size=9, gpu
                                     filter_size=filter_size,
                                     presmoothing=0, # Default, none
                                     filter_type="gaussian",
-                                    sigma_k=0.05)
+                                    sigma_k=0.05,
+                                    device_id=gpu_id)
 
-            output_vx, output_vy, output_vz, x = farneback.calculate_flow(
+            output_vx, output_vy, output_vz, x = _quiet_calculate_flow(farneback,
                 0.05 * cp.abs(ref_image / cp.max(ref_image.ravel())),
                 0.05 * cp.abs(mov_image / cp.max(mov_image.ravel())),
                 total_vol=(ref_image.shape[0], ref_image.shape[1], ref_image.shape[2]),
@@ -84,9 +95,10 @@ def register_one_image_only_deformation(mov_image_np, ref_image_np, filter_size=
                                     filter_size=filter_size,
                                     presmoothing=0, # Default, none
                                     filter_type="gaussian",
-                                    sigma_k=0.05)
-        
-        output_vx, output_vy, output_vz, x = farneback.calculate_flow(
+                                    sigma_k=0.05,
+                                    device_id=gpu_id)
+
+        output_vx, output_vy, output_vz, x = _quiet_calculate_flow(farneback,
                 0.05 * cp.abs(ref_image / cp.max(ref_image.ravel())),
                 0.05 * cp.abs(mov_image / cp.max(mov_image.ravel())),
                 total_vol=(ref_image.shape[0], ref_image.shape[1], ref_image.shape[2]),
@@ -125,12 +137,13 @@ def register_images(input_images, ref_index, filter_size=9, gpu_id=0):
                                     filter_size=filter_size,
                                     presmoothing=2, # Default, none
                                     filter_type="gaussian",
-                                    sigma_k=0.05)
+                                    sigma_k=0.05,
+                                    device_id=gpu_id)
         for ind in range(0, nimages):
             mov_image = images[ind, ...].squeeze()
             
 
-            output_vx, output_vy, output_vz, x = farneback.calculate_flow(
+            output_vx, output_vy, output_vz, x = _quiet_calculate_flow(farneback,
                 0.05 * cp.abs(ref_image / cp.max(ref_image.ravel())),
                 0.05 * cp.abs(mov_image / cp.max(mov_image.ravel())),
                 total_vol=(ref_image.shape[0], ref_image.shape[1], ref_image.shape[2]),
@@ -294,7 +307,6 @@ def findGPUs():
             f,t = torch.cuda.mem_get_info()        
         #memcap.append(float(torch.cuda.get_device_properties(devno).total_memory)/float(1024**3))
         memcap.append(float(f)/float(1024**3))
-        print(f'Memory: {memcap}')
     
     return np.argsort(np.array(memcap))
     

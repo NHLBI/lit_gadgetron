@@ -136,8 +136,8 @@ std::tuple<cuNDArray<float>,cuNDArray<float>,cuNDArray<float>> gpuSVD::cuda_DNSg
   float ms=0.f; CUDA_CHECK(cudaEventElapsedTime(&ms, start, stop));
 
   int info_h=0; CUDA_CHECK(cudaMemcpy(&info_h, d_info, sizeof(int), cudaMemcpyDeviceToHost));
-  if (info_h != 0) std::cerr << "cuSOLVER Sgesvd info=" << info_h << std::endl;
-  std::cout << "GPU cuSOLVER gesvd (float) time: " << ms << " ms" << std::endl;
+  if (info_h != 0) GERROR_STREAM("cuSOLVER Sgesvd info=" << info_h);
+  GDEBUG_STREAM("GPU cuSOLVER gesvd (float) time: " << ms << " ms" );
 
   CUDA_CHECK(cudaFree(d_work)); CUDA_CHECK(cudaFree(d_info));
   CUSOLVER_CHECK(cusolverDnDestroy(handle));
@@ -196,8 +196,8 @@ std::tuple<cuNDArray<float_complext>,cuNDArray<float>,cuNDArray<float_complext>>
   float ms=0.f; CUDA_CHECK(cudaEventElapsedTime(&ms, start, stop));
 
   int info_h=0; CUDA_CHECK(cudaMemcpy(&info_h, d_info, sizeof(int), cudaMemcpyDeviceToHost));
-  if (info_h != 0) std::cerr << "cuSOLVER Sgesvd info=" << info_h << std::endl;
-  std::cout << "GPU cuSOLVER gesvd (float) time: " << ms << " ms" << std::endl;
+  if (info_h != 0) GERROR_STREAM("cuSOLVER Sgesvd info=" << info_h);
+  GDEBUG_STREAM("GPU cuSOLVER gesvd (float) time: " << ms << " ms" );
   d_work.clear();
   CUDA_CHECK(cudaFree(d_info));
   CUSOLVER_CHECK(cusolverDnDestroy(handle));
@@ -265,8 +265,8 @@ std::tuple<cuNDArray<float>,cuNDArray<float>,cuNDArray<float>> gpuSVD::cuda_DNSg
   float ms=0.f; CUDA_CHECK(cudaEventElapsedTime(&ms, start, stop));
 
   int info_h=0; CUDA_CHECK(cudaMemcpy(&info_h, d_info, sizeof(int), cudaMemcpyDeviceToHost));
-  if (info_h != 0) std::cerr << "cuSOLVER Sgesvd info=" << info_h << std::endl;
-  std::cout << "GPU cuSOLVER gesvd (float) time: " << ms << " ms" << std::endl;
+  if (info_h != 0) GERROR_STREAM("cuSOLVER Sgesvd info=" << info_h);
+  GDEBUG_STREAM("GPU cuSOLVER gesvd (float) time: " << ms << " ms" );
   CUSOLVER_CHECK(cusolverDnDestroyGesvdjInfo(params));
   d_work.clear();
   CUDA_CHECK(cudaFree(d_info));
@@ -406,8 +406,8 @@ std::tuple<cuNDArray<float_complext>,cuNDArray<float>,cuNDArray<float_complext>>
   float ms=0.f; CUDA_CHECK(cudaEventElapsedTime(&ms, start, stop));
 
   int info_h=0; CUDA_CHECK(cudaMemcpy(&info_h, d_info, sizeof(int), cudaMemcpyDeviceToHost));
-  if (info_h != 0) std::cerr << "cuSOLVER Sgesvd info=" << info_h << std::endl;
-  std::cout << "GPU cuSOLVER gesvd (float) time: " << ms << " ms" << std::endl;
+  if (info_h != 0) GERROR_STREAM("cuSOLVER Sgesvd info=" << info_h);
+  GDEBUG_STREAM("GPU cuSOLVER gesvd (float) time: " << ms << " ms" );
   CUSOLVER_CHECK(cusolverDnDestroyGesvdjInfo(params));
   d_work.clear();
   CUDA_CHECK(cudaFree(d_info));

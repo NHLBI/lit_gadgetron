@@ -45,8 +45,8 @@ def eprint(*args, **kwargs):
 
 def registration_one_image(mov_image_np, ref_image_np,gpu_list=[]):
     GPU_freeM,dev_num=get_GPU_most_free(gpu_list)
-    print(f"Free Memory GPU {GPU_freeM} GPU num {dev_num}")
-    print("Registration of image 1: ", mov_image_np.shape)
+    eprint(f"Free Memory GPU {GPU_freeM} GPU num {dev_num}")
+    eprint("Registration of image 1: ", mov_image_np.shape)
     deformation_fields = reg.register_one_image_only_deformation(mov_image_np,ref_image_np,gpu_id=dev_num).transpose(1,2,3,0)
 
     return deformation_fields.astype(np.float32)
@@ -69,7 +69,7 @@ def registration_images(images,ref_index=0,gpu_list=[]):
     eprint(f"----------------Running registration : Ref index {ref_index} Nbins {images.shape[0]}--------------")
     #with redirect_stdout(fnull) and redirect_stderr(fnull):
     deformation_fields = reg.register_images_only_deformation(images,ref_index,gpu_id=dev_num)
-    print(deformation_fields.shape)
+    eprint(deformation_fields.shape)
     deformation_fields = deformation_fields.transpose(2,3,4,1,0)
     np.nan_to_num(deformation_fields)
     eprint("Registration Time: ", time.time()-st)
@@ -78,8 +78,8 @@ def registration_images(images,ref_index=0,gpu_list=[]):
 
         
 def registration_images_old(images,bidirectional=False,ref_index=0):
-    
-    print("Registration of images: ", images.shape)
+
+    eprint("Registration of images: ", images.shape)
     #images t,nx,ny,nz
     #[0,2,3,1]
     #images = images.transpose(3,0,1,2)
@@ -97,7 +97,7 @@ def registration_images_old(images,bidirectional=False,ref_index=0):
     eprint("----------------Running registration--------------")
     with redirect_stdout(fnull) and redirect_stderr(fnull):
         deformation_fields = reg.register_images_only_deformation(images,ref_index)
-    print(deformation_fields.shape)
+    eprint(deformation_fields.shape)
     deformation_fields = deformation_fields.transpose(2,3,4,1,0)
     np.nan_to_num(deformation_fields)
     eprint("Registration Time: ", time.time()-st)
@@ -105,8 +105,8 @@ def registration_images_old(images,bidirectional=False,ref_index=0):
     return deformation_fields.astype(np.float32)
 
 def registration_images_back(images,bidirectional=False,ref_index=0):
-    
-    print("Registration of images: ", images.shape)
+
+    eprint("Registration of images: ", images.shape)
     #images t,nx,ny,nz
     #[0,2,3,1]
     #images = images.transpose(3,0,1,2)
@@ -127,7 +127,7 @@ def registration_images_back(images,bidirectional=False,ref_index=0):
         for idx in range(images.shape[0]):
             idxs = [ref_index,idx]
             deformation_fields[idx,...] = reg.register_images_only_deformation(images[idxs,...],1)[[0],...]
-    print(deformation_fields.shape)
+    eprint(deformation_fields.shape)
     deformation_fields = deformation_fields.transpose(2,3,4,1,0)
     np.nan_to_num(deformation_fields)
     eprint("Registration Time: ", time.time()-st)

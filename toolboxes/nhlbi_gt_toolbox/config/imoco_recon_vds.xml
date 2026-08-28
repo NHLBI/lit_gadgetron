@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <version>2</version>
+
+    <readers>
+        <reader>
+            <dll>gadgetron_core_readers</dll>
+            <classname>AcquisitionReader</classname>
+        </reader>
+        <reader>
+            <dll>gadgetron_core_readers</dll>
+            <classname>WaveformReader</classname>
+        </reader>
+    </readers>
+
+    <writers>
+        <writer>
+            <dll>gadgetron_core_writers</dll>
+            <classname>ImageWriter</classname>
+        </writer>
+    </writers>
+
+    <stream>
+
+        <!-- Convert gradient waveforms into trajectories (VDS: variable density spiral) -->
+        <gadget>
+            <name>WaveformToTrajectory</name>
+            <dll>nhlbi_gt_gadgets</dll>
+            <classname>WaveformToTrajectory</classname>
+            <property><name>perform_GIRF</name><value>true</value></property>
+            <property><name>GIRF_folder</name><value>/opt/GIRF/</value></property>
+            <property><name>generateTraj</name><value>true</value></property>
+            <property><name>attachWaveform</name><value>false</value></property>
+        </gadget>
+
+        <!-- Noise prewhitening -->
+        <gadget>
+            <dll>gadgetron_mricore</dll>
+            <classname>NoiseAdjustGadget</classname>
+        </gadget>
+
+        <gadget>
+            <name>RemoveSpiralOversampling</name>
+            <dll>nhlbi_gt_gadgets</dll>
+            <classname>RemoveSpiralOversampling</classname>
+        </gadget>
+
+        <gadget>
+            <name>RemoveNavsGadget</name>
+            <dll>nhlbi_gt_gadgets</dll>
+            <classname>RemoveNavsGadget</classname>
+        </gadget>
+
+        <external>
+            <execute name="BinningGadget" target="BinningGadget" type="python"/>
+            <configuration>
+                <property name="stableBinning"    value="False"/>
+                <property name="bidirectional"    value="True"/>
+                <property name="evenbins"         value="True"/>
+                <property name="numBins"          value="12"/>
+                <property name="useDC"            value="True"/>
+            </configuration>
+            <configuration/>
+        </external>
+
+        <gadget>
+            <name>ImagetoVector</name>
+            <dll>nhlbi_gt_gadgets</dll>
+            <classname>ImagetoVector</classname>
+        </gadget>
+
+        <gadget>
+            <name>PrepreconParams</name>
+            <dll>nhlbi_gt_gadgets</dll>
+            <classname>PrepreconParams</classname>
+            <property><name>matOSP_vector</name><value>1.5 1.5 1.5</value></property>
+            <property><name>downsampling_vector</name><value>1 1 1</value></property>
+            <property><name>warpCUDA_vector</name><value>true true true</value></property>
+            <property><name>is3D</name><value>true</value></property>
+            <property><name>kernel_width</name><value>3</value></property>
+            <property><name>oversampling_factor</name><value>1.5</value></property>
+            <property><name>kernel_width_dcf</name><value>3</value></property>
+            <property><name>iterations_dcf</name><value>10</value></property>
+            <property><name>oversampling_factor_dcf</name><value>2.1</value></property>
+            <property><name>useIterativeDCWEstimated</name><value>false</value></property>
+            <property><name>lambda_spatial</name><value>0.001</value></property>
+            <property><name>lambda_spatial_imoco</name><value>0.001</value></property>
+            <property><name>lambda_time</name><value>0.1</value></property>
+            <property><name>lambda_time2</name><value>0.0</value></property>
+            <property><name>iterations</name><value>5</value></property>
+            <property><name>iterations_imoco</name><value>5</value></property>
+            <property><name>iterations_inner</name><value>2</value></property>
+            <property><name>tolerance</name><value>100</value></property>
+            <property><name>norm</name><value>2</value></property>
+            <property><name>use_gcc</name><value>false</value></property>
+            <property><name>gcc_coils</name><value>6</value></property>
+            <property><name>doMC_iter</name><value>false</value></property>
+            <property><name>iteration_count_moco</name><value>3</value></property>
+        </gadget>
+
+        <!--
+            reconType values:
+              0 = iMOCO (iterative Motion Compensated reconstruction)
+              1 = 4D Time-resolved
+              2 = 5D Time-resolved
+              3 = 4D iMOCO
+              4 = 5D Cardiac-Respiratory (collapsed respiratory + 5D iMOCO)
+              5 = 4D Low-Rank
+              6 = 4D MOCO Low-Rank
+              7 = 3D CG-SENSE (per-bin)
+
+            processingType values:
+              0 = None
+              1 = Dynamic Lung Water Density (dLWD)
+        -->
+        <gadget>
+            <name>Noncart_recon_gadget</name>
+            <dll>nhlbi_gt_gadgets</dll>
+            <classname>Noncart_recon_gadget</classname>
+            <property><name>Debug</name><value>0</value></property>
+            <property><name>doConcomitantFieldCorrection</name><value>true</value></property>
+            <property><name>referencePhase</name><value>0</value></property>
+            <property><name>estimateCSM_perc</name><value>50</value></property>
+            <property><name>reconType</name><value>0</value></property>  <!-- iMOCO -->
+            <property><name>processingType</name><value>0</value></property>  <!-- None -->
+        </gadget>
+
+
+        <gadget>
+            <name>ImageArraySplit</name>
+            <dll>gadgetron_mricore</dll>
+            <classname>ImageArraySplitGadget</classname>
+        </gadget>
+
+        <gadget>
+            <name>ComplexToFloatAttrib</name>
+            <dll>gadgetron_mricore</dll>
+            <classname>ComplexToFloatGadget</classname>
+        </gadget>
+
+         <gadget>
+            <name>AutoScaleGadget</name>
+            <dll>gadgetron_mricore</dll>
+            <classname>AutoScaleGadget</classname>
+        </gadget>
+
+       <gadget>
+            <name>FloatToShort</name>
+            <dll>gadgetron_mricore</dll>
+            <classname>FloatToUShortGadget</classname>
+        </gadget>
+
+        <gadget>
+            <name>ImageFinish</name>
+            <dll>gadgetron_mricore</dll>
+            <classname>ImageFinishGadget</classname>
+        </gadget>
+
+    </stream>
+</configuration>

@@ -1,0 +1,114 @@
+[
+  {
+    "file": "imoco_vds/noise_data.h5",
+    "sha256": "89396f6de4bf248aa9a37335ac086b73dd499773ec1f57c9aba83879b1cc144d",
+    "type": "noise",
+    "test": "imoco_vds"
+  },
+  {
+    "file": "imoco_vds/recon_data.h5",
+    "sha256": "4d1888c4714467cbc4a0f7ccb454275d10596ffcd64b003099fdf6e110e79abf",
+    "type": "input",
+    "test": "imoco_vds"
+  },
+  {
+    "file": "spiral_vds_dlwd/noise_data.h5",
+    "sha256": "89396f6de4bf248aa9a37335ac086b73dd499773ec1f57c9aba83879b1cc144d",
+    "type": "noise",
+    "test": "spiral_vds_dlwd"
+  },
+  {
+    "file": "spiral_vds_dlwd/recon_data.h5",
+    "sha256": "4d1888c4714467cbc4a0f7ccb454275d10596ffcd64b003099fdf6e110e79abf",
+    "type": "input",
+    "test": "spiral_vds_dlwd"
+  },
+  {
+    "file": "imoco_vds/baseline_output.h5",
+    "sha256": "a3080275eb0b509c917bf8398cad3a19cbff9f5ad5555e99cd2bf5ec4eec410d",
+    "type": "baseline",
+    "test": "imoco_vds",
+    "validated_by": "unknown",
+    "validated_date": "2026-03-19",
+    "git_sha": "d11d8915",
+    "recon_time_seconds": 386.0
+  },
+  {
+    "file": "spiral_vds_dlwd/baseline_output.h5",
+    "sha256": "6251769fc250e16436d5274599dc859cbc8f0e936a9892ee218a81c593cc44e8",
+    "type": "baseline",
+    "test": "spiral_vds_dlwd",
+    "validated_by": "unknown",
+    "validated_date": "2026-03-19",
+    "git_sha": "d11d8915",
+    "recon_time_seconds": 236.2
+  },
+  {
+    "file": "mocolr_bSTAR/noise_data.h5",
+    "sha256": "0e635ec41daeae49f01788aeddc6e751e21ba7b52a12276929307acb26eef615",
+    "type": "noise",
+    "test": "mocolr_bSTAR"
+  },
+  {
+    "file": "mocolr_bSTAR/recon_data.h5",
+    "sha256": "e2d2b684eba9c78c7c9bc1252a47bf080117a99f9705e9032e6ba200ca8b680c",
+    "type": "input",
+    "test": "mocolr_bSTAR"
+  },
+  {
+    "file": "mocolr_bSTAR/bstar_450mm_1.20mm_true0_TR2.32ms_rf200_i110_67k_FA40_WASP_self0_fid0_noise0.seq",
+    "sha256": "9fed494c5103abd5e4abe7dceda46eb22eaf256a7decc9172807369ed599546d",
+    "type": "additional",
+    "test": "mocolr_bSTAR"
+  },
+  {
+    "file": "mocolr_bSTAR/traj_bstar_450mm_1.20mm_true0_TR2.32ms_rf200_i110_67k_FA40_WASP_self0_fid0_noise0.h5",
+    "sha256": "25c3528406a8a2c04a452955c9ddb1f4483c79f29f276826f0a6f3aff5fab3ca",
+    "type": "additional",
+    "test": "mocolr_bSTAR"
+  },
+  {
+    "file": "cardiovascular_bSTAR/noise_data.h5",
+    "sha256": "0e635ec41daeae49f01788aeddc6e751e21ba7b52a12276929307acb26eef615",
+    "type": "noise",
+    "test": "cardiovascular_bSTAR"
+  },
+  {
+    "file": "cardiovascular_bSTAR/recon_data.h5",
+    "sha256": "e2d2b684eba9c78c7c9bc1252a47bf080117a99f9705e9032e6ba200ca8b680c",
+    "type": "input",
+    "test": "cardiovascular_bSTAR"
+  },
+  {
+    "file": "cardiovascular_bSTAR/bstar_450mm_1.20mm_true0_TR2.32ms_rf200_i110_67k_FA40_WASP_self0_fid0_noise0.seq",
+    "sha256": "9fed494c5103abd5e4abe7dceda46eb22eaf256a7decc9172807369ed599546d",
+    "type": "additional",
+    "test": "cardiovascular_bSTAR"
+  },
+  {
+    "file": "cardiovascular_bSTAR/traj_bstar_450mm_1.20mm_true0_TR2.32ms_rf200_i110_67k_FA40_WASP_self0_fid0_noise0.h5",
+    "sha256": "25c3528406a8a2c04a452955c9ddb1f4483c79f29f276826f0a6f3aff5fab3ca",
+    "type": "additional",
+    "test": "cardiovascular_bSTAR"
+  },
+  {
+    "file": "cardiovascular_bSTAR/baseline_output.h5",
+    "sha256": "0e2dd48076fda2baee8faa98ebd716dace76f5c7f1d38aa8b9a700ad3c6eb2b9",
+    "type": "baseline",
+    "test": "cardiovascular_bSTAR",
+    "validated_by": "unknown",
+    "validated_date": "2026-04-08",
+    "git_sha": "315e7878",
+    "recon_time_seconds": 294.9
+  },
+  {
+    "file": "mocolr_bSTAR/baseline_output.h5",
+    "sha256": "d4aa67155c57272b8fca249d4b43f010a52929b4ab9b39e345d6afa577a43c0a",
+    "type": "baseline",
+    "test": "mocolr_bSTAR",
+    "validated_by": "unknown",
+    "validated_date": "2026-04-08",
+    "git_sha": "315e7878",
+    "recon_time_seconds": 179.6
+  }
+]

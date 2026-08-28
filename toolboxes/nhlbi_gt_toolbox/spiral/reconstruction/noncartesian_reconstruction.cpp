@@ -450,7 +450,6 @@ void noncartesian_reconstruction<D>::reconstruct(cuNDArray<float_complext>* data
     // 3) * std::pow(recon_params.oversampling_factor_, D) * 4 + (stride_results * 4) * (2 * CHA) *
     // std::pow(recon_params.oversampling_factor_, D) * 4) / float(std::pow(1024, 3)); GDEBUG_STREAM("data and image
     // space: " << float(data_and_imageSize)); // this is not working
-
     if(!recon_params.try_channel_gridding)
     {
         for (int iCHA = 0; iCHA < CHA; iCHA++) {
@@ -459,12 +458,10 @@ void noncartesian_reconstruction<D>::reconstruct(cuNDArray<float_complext>* data
 
             this->nfft_plan_->compute(data_view, results_view, dcw, NFFT_comp_mode::BACKWARDS_NC2C);
         }
-        cudaDeviceSynchronize();
+        
     }else{
-    
         try {
             this->nfft_plan_->compute(*data, *image, dcw, NFFT_comp_mode::BACKWARDS_NC2C);
-            cudaDeviceSynchronize();
         } catch (const std::exception& e) {
             cudaError_t err = cudaGetLastError();
             if (err != cudaSuccess) {
@@ -476,10 +473,8 @@ void noncartesian_reconstruction<D>::reconstruct(cuNDArray<float_complext>* data
 
             this->nfft_plan_->compute(data_view, results_view, dcw, NFFT_comp_mode::BACKWARDS_NC2C);
             }
-        cudaDeviceSynchronize();
             this->recon_params.try_channel_gridding=false;
             GDEBUG_STREAM("Try Channel gridding to false ");
-            cudaDeviceSynchronize();
         } catch (...) {
             cudaError_t err = cudaGetLastError();
             if (err != cudaSuccess) {
@@ -490,10 +485,11 @@ void noncartesian_reconstruction<D>::reconstruct(cuNDArray<float_complext>* data
             auto results_view = cuNDArray<complext<float>>(image_dimensions, image->data() + stride_results * iCHA);
             this->nfft_plan_->compute(data_view, results_view, dcw, NFFT_comp_mode::BACKWARDS_NC2C);
             }
-            cudaDeviceSynchronize();
             this->recon_params.try_channel_gridding=false;
+            GDEBUG_STREAM("Try Channel gridding to false ");
         }
     }
+    cudaDeviceSynchronize();
 
 }
 
@@ -516,6 +512,7 @@ void noncartesian_reconstruction<D>::reconstruct(cuNDArray<float_complext>* data
 
     auto out_dimensions = *image->get_dimensions();
     auto in_dimensions = *data->get_dimensions();
+    auto channel_dimensions = *data->get_dimensions();
 
     if (CHA != 1 || csm->get_size(csm->get_number_of_dimensions() - 1) == CHA) {
         in_dimensions.pop_back(); // remove CHA
@@ -536,19 +533,68 @@ void noncartesian_reconstruction<D>::reconstruct(cuNDArray<float_complext>* data
 
     //#pragma omp target teams num_teams(numteams) 
     //#pragma omp distribute parallel for reduction(complex_add: test)
-    for (size_t ich = 0; ich < CHA; ich++) {
+
+    if(!recon_params.try_channel_gridding)
+    {
+        for (size_t ich = 0; ich < CHA; ich++) {
+
+            auto slice_view=cuNDArray<float_complext>(in_dimensions, data->get_data_ptr() + stride_ch * ich);
+            auto tmpview = cuNDArray<float_complext>(out_dimensions);
+
+            this->nfft_plan_->compute(&slice_view, tmpview, dcw, NFFT_comp_mode::BACKWARDS_NC2C);
+
+            auto csm_view = cuNDArray<float_complext>(out_dimensions, csm->get_data_ptr() + stride_out * ich);
+            tmpview *= *conj(&csm_view);
+            out_view_ch += tmpview;
+        }
+        
+    }else{
+        try {
+            out_dimensions.push_back(CHA);
+            auto channel_images=cuNDArray<float_complext>(out_dimensions);
+            this->nfft_plan_->compute(*data, channel_images, dcw, NFFT_comp_mode::BACKWARDS_NC2C);
+            channel_images *= *conj(csm);
+            out_view_ch += *sum(&channel_images, channel_images.get_number_of_dimensions() - 1);
+
+        } catch (const std::exception& e) {
+            cudaError_t err = cudaGetLastError();
+            if (err != cudaSuccess) {
+                GERROR_STREAM("CUDA error in deconstruct: " << cudaGetErrorString(err));
+            }
+            for (size_t ich = 0; ich < CHA; ich++) {
+                auto slice_view=cuNDArray<float_complext>(in_dimensions, data->get_data_ptr() + stride_ch * ich);
+                auto tmpview = cuNDArray<float_complext>(out_dimensions);
+
+                this->nfft_plan_->compute(&slice_view, tmpview, dcw, NFFT_comp_mode::BACKWARDS_NC2C);
+
+                auto csm_view = cuNDArray<float_complext>(out_dimensions, csm->get_data_ptr() + stride_out * ich);
+                tmpview *= *conj(&csm_view);
+                out_view_ch += tmpview;
+            }
+            this->recon_params.try_channel_gridding=false;
+            GDEBUG_STREAM("Try Channel gridding to false ");
+        } catch (...) {
+            cudaError_t err = cudaGetLastError();
+            if (err != cudaSuccess) {
+                GERROR_STREAM("Unknown CUDA error in deconstruct: " << cudaGetErrorString(err));
+            }
+            for (size_t ich = 0; ich < CHA; ich++) {
 
 
-        auto slice_view=cuNDArray<float_complext>(in_dimensions, data->get_data_ptr() + stride_ch * ich);
-        auto tmpview = cuNDArray<float_complext>(out_dimensions);
+                auto slice_view=cuNDArray<float_complext>(in_dimensions, data->get_data_ptr() + stride_ch * ich);
+                auto tmpview = cuNDArray<float_complext>(out_dimensions);
 
-        this->nfft_plan_->compute(&slice_view, tmpview, dcw, NFFT_comp_mode::BACKWARDS_NC2C);
+                this->nfft_plan_->compute(&slice_view, tmpview, dcw, NFFT_comp_mode::BACKWARDS_NC2C);
 
-        auto csm_view = cuNDArray<float_complext>(out_dimensions, csm->get_data_ptr() + stride_out * ich);
-        tmpview *= *conj(&csm_view);
-        out_view_ch += tmpview;
+                auto csm_view = cuNDArray<float_complext>(out_dimensions, csm->get_data_ptr() + stride_out * ich);
+                tmpview *= *conj(&csm_view);
+                out_view_ch += tmpview;
+            }
+            this->recon_params.try_channel_gridding=false;
+            GDEBUG_STREAM("Try Channel gridding to false ");
+        }
     }
-    cudaDeviceSynchronize();
+   cudaDeviceSynchronize();
 }
 
 template <size_t D>
@@ -567,7 +613,6 @@ void noncartesian_reconstruction<D>::deconstruct(cuNDArray<float_complext>* imag
     // GDEBUG_STREAM("Y: " << images->get_size(1));
     // GDEBUG_STREAM("Z: " << images->get_size(2));
     // GDEBUG_STREAM("C: " << images->get_size(3));
-
     // if (!this->isprocessed)
     {
         this->nfft_plan_->preprocess(*traj, NFFT_prep_mode::C2NC);
@@ -612,7 +657,6 @@ void noncartesian_reconstruction<D>::deconstruct(cuNDArray<float_complext>* imag
     cudaGetDeviceProperties(&properties, data->get_device());
 
     // cudaSetDevice(data->get_device());
-    // GDEBUG_STREAM("Failed: now running in slower channel by channel mode");
     if(!recon_params.try_channel_gridding)
     {
         for (int iCHA = 0; iCHA < CHA; iCHA++) {
@@ -623,15 +667,13 @@ void noncartesian_reconstruction<D>::deconstruct(cuNDArray<float_complext>* imag
             tmp_view *= csm_view;
             this->nfft_plan_->compute(&tmp_view, data_view, dcw, NFFT_comp_mode::FORWARDS_C2NC);
         }
-        cudaDeviceSynchronize();
+        
     }else{
-    
         try {
             auto dims_csm = csm->get_dimensions();
             cuNDArray<float_complext> images_mult_csm(dims_csm);
             csm_mult_M<float, D>(images, &images_mult_csm, csm);
             this->nfft_plan_->compute(images_mult_csm, *data, dcw, NFFT_comp_mode::FORWARDS_C2NC);
-            cudaDeviceSynchronize();
         } catch (const std::exception& e) {
             cudaError_t err = cudaGetLastError();
             if (err != cudaSuccess) {
@@ -647,7 +689,6 @@ void noncartesian_reconstruction<D>::deconstruct(cuNDArray<float_complext>* imag
             }
             this->recon_params.try_channel_gridding=false;
             GDEBUG_STREAM("Try Channel gridding to false ");
-            cudaDeviceSynchronize();
         } catch (...) {
             cudaError_t err = cudaGetLastError();
             if (err != cudaSuccess) {
@@ -661,10 +702,10 @@ void noncartesian_reconstruction<D>::deconstruct(cuNDArray<float_complext>* imag
                 tmp_view *= csm_view;
                 this->nfft_plan_->compute(&tmp_view, data_view, dcw, NFFT_comp_mode::FORWARDS_C2NC);
             }
-            cudaDeviceSynchronize();
             this->recon_params.try_channel_gridding=false;
         }
     }
+    cudaDeviceSynchronize();
 
     // this->nfft_plan_->compute(*images, *data, dcw, NFFT_comp_mode::FORWARDS_C2NC);
 }
@@ -891,7 +932,7 @@ cuNDArray<float> noncartesian_reconstruction<D>::estimate_dcf(cuNDArray<vector_t
 
     float kw_dcf = recon_params.kernel_width_dcf_;         // 1e-2
     float osf_dcf = recon_params.oversampling_factor_dcf_; // 1.5
-    GDEBUG_STREAM("DCF parameters: kw " << kw_dcf << " os " << osf_dcf);
+    //GDEBUG_STREAM("DCF parameters: kw " << kw_dcf << " os " << osf_dcf);
     auto dims_traj = *(traj->get_dimensions());
     std::vector<size_t> flat_dims = {traj->get_number_of_elements()};
     auto hoTraj = hoNDArray<vector_td<float, 3>>(
@@ -920,7 +961,7 @@ cuNDArray<float> noncartesian_reconstruction<D>::estimate_dcf(cuNDArray<vector_t
                                                               cuNDArray<float>* dcf_in) {
     float kw_dcf = recon_params.kernel_width_dcf_;         // 1e-2
     float osf_dcf = recon_params.oversampling_factor_dcf_; // 1.5
-    GDEBUG_STREAM("DCF parameters: kw " << kw_dcf << " os " << osf_dcf);
+    //GDEBUG_STREAM("DCF parameters: kw " << kw_dcf << " os " << osf_dcf);
     auto dims_traj = *(traj->get_dimensions());
 
     auto hoTraj = hoNDArray<vector_td<float, 3>>(

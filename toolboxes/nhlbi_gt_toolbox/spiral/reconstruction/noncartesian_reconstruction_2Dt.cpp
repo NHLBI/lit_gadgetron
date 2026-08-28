@@ -91,8 +91,8 @@ namespace nhlbi_toolbox
             solver_.add_regularization_operator(Ry, recon_params.norm);
 
             GDEBUG_STREAM("Data_device:" << data->get_device());
-            GDEBUG_STREAM("gpus_input_possible[0]:" << recon_params.selectedDevices[0]<< " [1] if exist" << recon_params.selectedDevices[1]);
-            solver_.set_gpus(recon_params.selectedDevices);
+            GDEBUG_STREAM("gpus_input_possible[0]:" << recon_params.selectedDevices_solver[0]<< " [1] if exist" << recon_params.selectedDevices_solver[1]);
+            solver_.set_gpus(recon_params.selectedDevices_solver);
             reg_image = *solver_.solve(data);
 
             auto reg_image_dims = *reg_image.get_dimensions();
@@ -175,8 +175,8 @@ namespace nhlbi_toolbox
             
 
             GDEBUG_STREAM("Data_device:" << data->get_device());
-            GDEBUG_STREAM("gpus_input_possible[0]:" << recon_params.selectedDevices[0]<< " [1] if exist" << recon_params.selectedDevices[1]);
-            solver_.set_gpus(recon_params.selectedDevices);
+            GDEBUG_STREAM("gpus_input_possible[0]:" << recon_params.selectedDevices_solver[0]<< " [1] if exist" << recon_params.selectedDevices_solver[1]);
+            solver_.set_gpus(recon_params.selectedDevices_solver);
             reg_image = *solver_.solve(data);
 
             cuNDArray<float_complext> images_cropped = this->crop_to_recondims<float_complext>(reg_image);

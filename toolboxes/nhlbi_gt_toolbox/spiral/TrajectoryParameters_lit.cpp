@@ -13,6 +13,12 @@ namespace Gadgetron
         std::pair<hoNDArray<floatd2>, hoNDArray<float>>
         TrajectoryParameters_lit::calculate_trajectories_and_weight(const ISMRMRD::AcquisitionHeader &acq_header)
         {
+            
+            
+            bool debug_flag = !(this->debug_folder_.empty());
+
+
+            
             // Two-fov percentage definition for variable density design
             
             if (strstr(systemModel.c_str(),"MAGNETOM eMeRge-XL") || strstr(systemModel.c_str(),"MAGNETOM Sola"))
@@ -56,8 +62,7 @@ namespace Gadgetron
                 fov_vds_temp[1] = std::round((-1 * fov_  * (1.0 - 1.0 * (vds_factor_ / 100.0)))*1000.0f)/1000.0f; //
                 fov_vds_ = fov_vds_temp;
 
-                                GDEBUG_STREAM("fov_vds_temp[0]:" << fov_vds_temp[0]);
-
+                GDEBUG_STREAM("fov_vds_temp[0]:" << fov_vds_temp[0]);
                 GDEBUG_STREAM("fov_vds_temp[1]:" << fov_vds_temp[1]);
 
             }
@@ -70,18 +75,23 @@ namespace Gadgetron
             double sample_time = (1.0f * Tsamp_ns_) * 1.0e-9;
             // auto base_gradients = calculate_vds(smax_, gmax_, sample_time, sample_time, Nints_, &fov_, nfov, krmax_, ngmax, acq_header.number_of_samples);
             auto base_gradients = nhlbi_toolbox::Spiral::calculate_vds(smax_, gmax_, sample_time, sample_time, Nints_, fov_vds_, nfov, krmax_, ngmax, acq_header.number_of_samples);
-            auto filename = "/opt/data/gt_data/base_gradients.real2";
-            nhlbi_toolbox::utils::write_cpu_nd_array<floatd2>(base_gradients, filename);
+            if (debug_flag){
+                nhlbi_toolbox::utils::write_cpu_nd_array<floatd2>(base_gradients, this->debug_folder_ + std::string("base_gradients.real2"));
+            }
+
+            
             int samples_per_interleave_ = base_gradients.get_number_of_elements();
             
  
             if (spiral_rotations_ == 0)
             { // this is a hack which requires this parameter..
                 // normal operation
+                GDEBUG_STREAM("Using default spiral rotations: " << Nints_);
                 base_gradients = nhlbi_toolbox::Spiral::create_rotations(base_gradients, Nints_);
             }
             else
             {
+                GDEBUG_STREAM("Using custom spiral rotations: " << spiral_rotations_ * this->acc);
                 // Custom spiral rotations
                 base_gradients = nhlbi_toolbox::Spiral::create_rotations(base_gradients, spiral_rotations_ * this->acc);
             }
@@ -89,25 +99,27 @@ namespace Gadgetron
             auto trajectories = nhlbi_toolbox::Spiral::calculate_trajectories(base_gradients, sample_time, krmax_);
  
             auto weights = nhlbi_toolbox::Spiral::calculate_weights_Hoge(base_gradients, trajectories);
- 
-            filename = "/opt/data/gt_data/trajectories.real2";
-            nhlbi_toolbox::utils::write_cpu_nd_array<floatd2>(trajectories, filename);
-            filename = "/opt/data/gt_data/weights.real";
+
+            if (debug_flag){
+                nhlbi_toolbox::utils::write_cpu_nd_array<floatd2>(trajectories, this->debug_folder_ + std::string("trajectories.real2"));
+                nhlbi_toolbox::utils::write_cpu_nd_array<float>(weights, this->debug_folder_ + std::string("weights.real"));
             
-            nhlbi_toolbox::utils::write_cpu_nd_array<float>(weights, filename);
+            }
             
             if (this->girf_kernel)
             {
-                // base_gradients=Gadgetron::GIRF::girf_correct(base_gradients, this->girf_kernel, rotation_matrix, 2e-6, 10e-6, 0.85e-6);
+                // base_gradients=Gadgetron::GIRF::girf_correct(base_gradients, this->girf_kernel, rotation_matrix, 2e-6, 10e-6, this->clock_shift_s);
                 base_gradients = correct_gradients(base_gradients, sample_time, this->girf_sampling_time_us, acq_header.read_dir, acq_header.phase_dir, acq_header.slice_dir);
-                auto filename = "/opt/data/gt_data/base_gradients_correct.real2";
-                nhlbi_toolbox::utils::write_cpu_nd_array<floatd2>(base_gradients, filename);
+                if (debug_flag){
+                    nhlbi_toolbox::utils::write_cpu_nd_array<floatd2>(base_gradients, this->debug_folder_ + std::string("base_gradients_correct.real2"));
+                }
                 // Weights should be calculated without GIRF corrections according to Hoge et al 2005
                 trajectories = nhlbi_toolbox::Spiral::calculate_trajectories(base_gradients, sample_time, krmax_);
- 
-             
-                filename = "/opt/data/gt_data/trajectories_correct.real2";
-                nhlbi_toolbox::utils::write_cpu_nd_array<floatd2>(trajectories, filename);
+
+                if (debug_flag){
+                    nhlbi_toolbox::utils::write_cpu_nd_array<floatd2>(trajectories, this->debug_folder_ + std::string("trajectories_correct.real2"));
+                }
+                
                 weights = nhlbi_toolbox::Spiral::calculate_weights_Hoge(base_gradients, trajectories);
             }
  
@@ -138,6 +150,15 @@ namespace Gadgetron
         void TrajectoryParameters_lit::set_acceleration_factor(size_t acc)
         {
             this->acc = acc;
+        }
+
+        void TrajectoryParameters_lit::set_debug_folder(std::string debug_folder)
+        {
+            this->debug_folder_ = debug_folder;
+        }
+        void TrajectoryParameters_lit::set_clock_shift(float shift_s)
+        {
+            this->clock_shift_s = shift_s;
         }
 
         TrajectoryParameters_lit::TrajectoryParameters_lit(const ISMRMRD::IsmrmrdHeader &h)
@@ -202,6 +223,7 @@ namespace Gadgetron
             GDEBUG("gmax:                    %f\n", gmax_);
             GDEBUG("Tsamp_ns:                %d\n", Tsamp_ns_);
             GDEBUG("Nints:                   %d\n", Nints_);
+            GDEBUG("spiral_rotation:         %d\n", spiral_rotations_);
             GDEBUG("fov:                     %f\n", fov_);
             GDEBUG("krmax:                   %f\n", krmax_);
             GDEBUG("GIRF kernel:             %d\n", bool(this->girf_kernel));
@@ -225,7 +247,7 @@ namespace Gadgetron
             rotation_matrix(1, 2) = slice_dir[1];
             rotation_matrix(2, 2) = slice_dir[2];
  
-            return nhlbi_toolbox::corrections::girf_correct(gradients, *girf_kernel, rotation_matrix, grad_samp_us, girf_samp_us, 0.85e-6);
+            return nhlbi_toolbox::corrections::girf_correct(gradients, *girf_kernel, rotation_matrix, grad_samp_us, girf_samp_us, this->clock_shift_s);
         }
     } // namespace Spiral
 } // namespace Gadgetron

@@ -86,8 +86,8 @@ namespace nhlbi_toolbox
             solver_.add_regularization_operator(Rz, recon_params.norm);
 
             GDEBUG_STREAM("Data_device:" << data->get_device());
-            GDEBUG_STREAM("gpus_input_possible[0]:" << recon_params.selectedDevices[0]<< " [1] if exist" << recon_params.selectedDevices[1]);
-            solver_.set_gpus(recon_params.selectedDevices);
+            GDEBUG_STREAM("gpus_input_possible[0]:" << recon_params.selectedDevices_solver[0]<< " [1] if exist" << recon_params.selectedDevices_solver[1]);
+            solver_.set_gpus(recon_params.selectedDevices_solver);
             cudaSetDevice(data->get_device());
             reg_image = *solver_.solve(data);
             cuNDArray<float_complext> images_cropped = this->crop_to_recondims<float_complext>(reg_image);
@@ -236,7 +236,8 @@ namespace nhlbi_toolbox
             std::replace(ho_prereconi.begin(),ho_prereconi.end(),INFINITY,0.0f);
             auto ho_prereconri = *real_imag_to_complex<float_complext>(&ho_prereconr,&ho_prereconi);
             precon_weights = boost::make_shared<cuNDArray<float_complext>>(hoNDArray<float_complext>(ho_prereconri));                                                                                                  
-
+            _precon_weights->clear();
+            _precon_weights_cropped.clear();
             D_->set_weights(precon_weights);
 
             // setup solver spit-bergman
@@ -265,9 +266,18 @@ namespace nhlbi_toolbox
             boost::shared_ptr<cuNDArray<float_complext>> csm)
         {
             auto data_dims = *data->get_dimensions();
+            auto stride = std::accumulate(data_dims.begin(), data_dims.end() - 1, size_t(1), std::multiplies<size_t>());
+            // prep data and dcw - doing this data save in memory to prevent data from being affected by recon.
+            cudaSetDevice(data->get_device());
+            hoNDArray<float_complext> hodata(*data->get_dimensions());
+            cudaMemcpy(hodata.get_data_ptr(), data->get_data_ptr(), data->get_number_of_elements() * sizeof(float_complext), cudaMemcpyDeviceToHost);
+
             auto dcwPtr = boost::make_shared<cuNDArray<float>>(*dcw);
-            // need to multiply by the weights to correctly to the FWD transform because we did sqrt of dcw
-            *data *= *dcw;
+            for (auto iCHA = 0; iCHA < recon_params.numberChannels; iCHA++)
+            {
+                auto dataview = cuNDArray<complext<float>>((*dcw).get_dimensions(), data->data() + stride * iCHA);
+                dataview *= (*dcw);
+            }
 
             auto E_ = boost::shared_ptr<cuNonCartesianSenseOperator<float, 3>>(new cuNonCartesianSenseOperator<float, 3>(ConvolutionType::ATOMIC));
             auto D_ = boost::shared_ptr<cuCgPreconditioner<float_complext>>(new cuCgPreconditioner<float_complext>());
@@ -319,8 +329,7 @@ namespace nhlbi_toolbox
             reg_image = *solver_.solve(data);
             cuNDArray<float_complext> images_cropped = this->crop_to_recondims<float_complext>(reg_image);
             
-            // de-prep data
-            *data /= *dcw;
+            cudaMemcpy(data->get_data_ptr(), hodata.get_data_ptr(), data->get_number_of_elements() * sizeof(float_complext), cudaMemcpyHostToDevice);
 
             return images_cropped;
         }

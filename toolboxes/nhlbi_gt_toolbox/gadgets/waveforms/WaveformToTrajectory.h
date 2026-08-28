@@ -37,20 +37,21 @@ using namespace Gadgetron;
         std::map<size_t,hoNDArray<float>> trajectory_map;
         std::map<size_t,Core::Waveform> gradient_wave_store;
         size_t curAvg=0;
- 
+        
         
     protected:
         ISMRMRD::IsmrmrdHeader header;
  
         NODE_PROPERTY(perform_GIRF, bool, " Perform GIRF", false);
         NODE_PROPERTY(GIRF_folder, std::string, "Path where GIRF Data is stored", "/opt/GIRF/");
-        NODE_PROPERTY(generateTraj, bool, "generate trajectories", false);
         NODE_PROPERTY(GIRF_samplingtime, float, "girf sampling time", 10e-6);
+        NODE_PROPERTY(clock_shift_s, float, "CLOCK SHIFT", 0.85e-6);
         NODE_PROPERTY(crop_index_st, size_t, "start index to crop acquisition data", 20);
+        NODE_PROPERTY(generateTraj, bool, "generate trajectories", false);
         NODE_PROPERTY(attachWaveform, bool, "attachWaveforms", true);
         NODE_PROPERTY(setPre, bool, "setPre", false);
         NODE_PROPERTY(realTime, bool, "realTime", false);
-
+        NODE_PROPERTY(debug_folder, std::string, "If set, the debug output will be written out", ""); // debug folder for waveforms and trajectories ("/opt/data/gt_data/")
         NODE_PROPERTY(pre_cutoff_manual, size_t, "pre_cutoff_manual", 20);
         NODE_PROPERTY(acceleration_factor, size_t, "acceleration_factor", 1); // bug fix for a sequence bug with acc
 

@@ -209,7 +209,7 @@ def readGIRFKernel(girf_path):
         girfz_data=np.reshape(girfz_data,[sGIRF,2])
         girfz=girfz_data[:,0]+1j*girfz_data[:,1]
     
-    print('GIRF not swap')
+    eprint('GIRF not swap')
     #GIRF=np.column_stack((girfy,girfx,girfz)) # Swap x,y Needs investigation
     GIRF=np.column_stack((girfx,girfy,girfz)) # Swap x,y Needs investigation
     return GIRF,dtGIRF
@@ -431,23 +431,38 @@ def Pulseq_WaveformtoTrajectoryGadget(connection):
 
     reading_time=time()
     trj_file=params['traj_folder_or_file']
-    print(trj_file)
+    # Search for .seq files in known test data locations
+    trj_folder_test_candidates=[
+        '/opt/nhlbi-integration-test/data',                          # RT container
+        '/opt/code/gadgetron/test/nhlbi_integration_tests/data',     # Docker build
+        '/opt/code/gadgetron_lit/test/nhlbi_integration_tests/data', # Dev container
+    ]
+    seq_files_test=[]
+    for trj_folder_test in trj_folder_test_candidates:
+        if op.isdir(trj_folder_test):
+            seq_files_test=glob.glob(op.join(trj_folder_test,'*','*.seq'))
+            break
+    seq_files_test.sort()
+    if not op.exists(trj_file):
+        eprint(f"This trajectory file or folder does not exist : {trj_file}")
+        trj_file=trj_folder_test
     # Detect Traj_file.h5 based on the hash
     if op.isdir(trj_file):
         hash_traj=''
         for k in range(len(mrd_header.userParameters.userParameterString)):
                 if mrd_header.userParameters.userParameterString[k].name =='tSequenceVariant':
                         hash_traj=mrd_header.userParameters.userParameterString[k].value
-        print(hash_traj)
+                        break
+        eprint(f"Hash trajectory :{hash_traj}")
         if hash_traj:
-                seq_files=glob.glob(op.join(trj_file,'*.seq'))
+                seq_files=glob.glob(op.join(trj_file,'*.seq'))+seq_files_test
                 seq_files.sort()
                 for seq_file in seq_files:
                         hash_seq=read_n_to_last_line(seq_file).split(' ')[-1][:-1]
                         if hash_traj==hash_seq:
-                            print(f"Seq file found : {op.basename(seq_file)[:-4]}")
+                            eprint(f"Seq file found : {op.basename(seq_file)[:-4]}")
                             break
-                trj_file=glob.glob(op.join(trj_file,f"*{op.basename(seq_file)[:-4]}*.h5"))[0]
+                trj_file=glob.glob(op.join(op.dirname(seq_file),f"*{op.basename(seq_file)[:-4]}*.h5"))[0]
 
     with mrd.File(trj_file,'r') as mrd_file:
         traj_header=mrd_file['dataset'].header
@@ -455,7 +470,7 @@ def Pulseq_WaveformtoTrajectoryGadget(connection):
         
 
     reading_time_traj=time()
-    print(' Reading traj running time %f s'%(reading_time_traj-reading_time))
+    eprint(' Reading traj running time %f s'%(reading_time_traj-reading_time))
 
     traj_unscaled = rearrange(np.array([tr.traj for tr in traj_acq if tr.flags==0]).squeeze(),'INT RO DIM -> RO INT DIM')
     ## ANGLES INFORMATION
@@ -480,7 +495,7 @@ def Pulseq_WaveformtoTrajectoryGadget(connection):
     discard_pre=traj_acq[idx_ref].discard_pre
     discard_post=traj_acq[idx_ref].discard_post
     real_dwell_time=traj_acq[idx_ref].sample_time_us*1e-6
-    print(real_dwell_time)
+    eprint(real_dwell_time)
     nr_readouts=traj_header.encoding[0].encodingLimits.kspace_encoding_step_1.maximum+1
     nr_interleaves=traj_header.encoding[0].encodingLimits.segment.maximum+1
     
@@ -521,7 +536,10 @@ def Pulseq_WaveformtoTrajectoryGadget(connection):
         traj_unscaled[...,ax] *= 0.5 / max_xyz[ax]
 
     eprint(f"shape traj {traj_unscaled.shape}")
-    traj_pulseq=traj_unscaled
+    if not params['applyGIRF']:
+        traj_pulseq=traj_unscaled
+        traj_echo1=traj_unscaled[:int(traj_unscaled.shape[0]/2),...]
+        traj_echo2=traj_unscaled[-int(traj_unscaled.shape[0]/2):,...]
 
     FOV=traj_header.encoding[0].reconSpace.fieldOfView_mm
     matrixR=traj_header.encoding[0].reconSpace.matrixSize
@@ -540,7 +558,7 @@ def Pulseq_WaveformtoTrajectoryGadget(connection):
             # Fix GIRF correction but it is incorrect
             trajectory_GIRF, grad_GIRF = apply_GIRF_plus_cp(all_gradients, real_dwell_time, sR,0,batchsize=32*5) #RO INT DIM #tRR=1.25
             GIRF_time_end=time()
-            print(' GIRF time %f s'%(GIRF_time_end-GIRF_time))
+            eprint(' GIRF time %f s'%(GIRF_time_end-GIRF_time))
             traj_c = trajectory_GIRF[:,:,:].real/scale_factor_before_GIRF/scale_factor_inside_GIRF 
             for ax in range(len(max_xyz)):
                 traj_c[...,ax] *= 0.5 / max_xyz[ax]

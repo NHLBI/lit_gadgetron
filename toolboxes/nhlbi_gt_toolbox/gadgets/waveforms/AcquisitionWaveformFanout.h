@@ -9,4 +9,4 @@
 using namespace Gadgetron;
 using namespace Gadgetron::Core;
 
-using AcquisitionWaveformFanout = Gadgetron::Core::Parallel::Fanout<variant<Acquisition, Waveform>>;
+using AcquisitionWaveformFanout = Gadgetron::Core::Parallel::Fanout<variant<Acquisition, Waveform,std::vector<std::vector<std::vector<std::vector<size_t>>>>>>;

@@ -145,8 +145,8 @@ namespace nhlbi_toolbox
             // gpus_input_possible.erase(std::remove(gpus_input_possible.begin(), gpus_input_possible.end(), data->get_device()), gpus_input_possible.end());
 
             GDEBUG_STREAM("Data_device:" << data->get_device());
-            GDEBUG_STREAM("gpus_input_possible[0]:" << recon_params.selectedDevices[0]<< " [1] if exist" << recon_params.selectedDevices[1]);
-            solver_.set_gpus(recon_params.selectedDevices);
+            GDEBUG_STREAM("gpus_input_possible[0]:" << recon_params.selectedDevices_solver[0]<< " [1] if exist" << recon_params.selectedDevices_solver[1]);
+            solver_.set_gpus(recon_params.selectedDevices_solver);
             cudaSetDevice(data->get_device());
 
             auto reg_image = *solver_.solve(data);
@@ -306,8 +306,8 @@ namespace nhlbi_toolbox
             // gpus_input_possible.erase(std::remove(gpus_input_possible.begin(), gpus_input_possible.end(), data->get_device()), gpus_input_possible.end());
 
             GDEBUG_STREAM("Data_device:" << data->get_device());
-            GDEBUG_STREAM("gpus_input_possible[0]:" << recon_params.selectedDevices[0]<< " [1] if exist" << recon_params.selectedDevices[1]);
-            solver_.set_gpus(recon_params.selectedDevices);
+            GDEBUG_STREAM("gpus_input_possible[0]:" << recon_params.selectedDevices_solver[0]<< " [1] if exist" << recon_params.selectedDevices_solver[1]);
+            solver_.set_gpus(recon_params.selectedDevices_solver);
             cudaSetDevice(data->get_device());
 
             auto reg_image = *solver_.solve(data);
@@ -607,8 +607,8 @@ namespace nhlbi_toolbox
             solver_.add_regularization_operator(Rz, recon_params.norm);
 
             GDEBUG_STREAM("Data_device:" << data->get_device());
-            GDEBUG_STREAM("gpus_input_possible[0]:" << recon_params.selectedDevices[0]<< " [1] if exist" << recon_params.selectedDevices[1]);
-            solver_.set_gpus(recon_params.selectedDevices);
+            GDEBUG_STREAM("gpus_input_possible[0]:" << recon_params.selectedDevices_solver[0]<< " [1] if exist" << recon_params.selectedDevices_solver[1]);
+            solver_.set_gpus(recon_params.selectedDevices_solver);
             cudaSetDevice(data->get_device());
 
             reg_image = *solver_.solve(data);
@@ -855,7 +855,7 @@ namespace nhlbi_toolbox
             */
             GDEBUG_STREAM("Data_device:" << data->get_device());
             GDEBUG_STREAM("gpus_input_possible[0]:" << recon_params.selectedDevices[0]<< recon_params.selectedDevices[1]);
-            solver_.set_gpus(recon_params.selectedDevices);
+            solver_.set_gpus(recon_params.selectedDevices_solver);
             
             cudaSetDevice(data->get_device());
 
@@ -995,8 +995,8 @@ namespace nhlbi_toolbox
             solver_.add_regularization_operator(Rz, recon_params.norm);
             */
             GDEBUG_STREAM("Data_device:" << data->get_device());
-            GDEBUG_STREAM("gpus_input_possible[0]:" << recon_params.selectedDevices[0]<< " [1] if exist" << recon_params.selectedDevices[1]);
-            solver_.set_gpus(recon_params.selectedDevices);
+            GDEBUG_STREAM("gpus_input_possible[0]:" << recon_params.selectedDevices_solver[0]<< " [1] if exist" << recon_params.selectedDevices_solver[1]);
+            solver_.set_gpus(recon_params.selectedDevices_solver);
             cudaSetDevice(data->get_device());
 
             auto reg_image = *solver_.solve(data);
@@ -1139,8 +1139,8 @@ namespace nhlbi_toolbox
             solver_.add_regularization_operator(Rz, recon_params.norm);
             */
             GDEBUG_STREAM("Data_device:" << data->get_device());
-            GDEBUG_STREAM("gpus_input_possible[0]:" << recon_params.selectedDevices[0]<< " [1] if exist" << recon_params.selectedDevices[1]);
-            solver_.set_gpus(recon_params.selectedDevices);
+            GDEBUG_STREAM("gpus_input_possible[0]:" << recon_params.selectedDevices_solver[0]<< " [1] if exist" << recon_params.selectedDevices_solver[1]);
+            solver_.set_gpus(recon_params.selectedDevices_solver);
             cudaSetDevice(data->get_device());
 
             auto reg_image = *solver_.solve(data);
@@ -1341,8 +1341,8 @@ namespace nhlbi_toolbox
             // solver_.add_group(recon_params.norm);
 
             GDEBUG_STREAM("Data_device:" << data->get_device());
-            GDEBUG_STREAM("gpus_input_possible[0]:" << recon_params.selectedDevices[0]<< " [1] if exist" << recon_params.selectedDevices[1]);
-            solver_.set_gpus(recon_params.selectedDevices);
+            GDEBUG_STREAM("gpus_input_possible[0]:" << recon_params.selectedDevices_solver[0]<< " [1] if exist" << recon_params.selectedDevices_solver[1]);
+            solver_.set_gpus(recon_params.selectedDevices_solver);
             cudaSetDevice(data->get_device());
 
             reg_image = *solver_.solve(data);
@@ -1551,8 +1551,8 @@ namespace nhlbi_toolbox
             // solver_.add_regularization_group_operator(Rz);
             // solver_.add_group(recon_params.norm);
             GDEBUG_STREAM("Data_device:" << data->get_device());
-            GDEBUG_STREAM("gpus_input_possible[0]:" << recon_params.selectedDevices[0]<< " [1] if exist" << recon_params.selectedDevices[1]);
-            solver_.set_gpus(recon_params.selectedDevices);
+            GDEBUG_STREAM("gpus_input_possible[0]:" << recon_params.selectedDevices_solver[0]<< " [1] if exist" << recon_params.selectedDevices_solver[1]);
+            solver_.set_gpus(recon_params.selectedDevices_solver);
             cudaSetDevice(data->get_device());
 
             reg_image = *solver_.solve(data);

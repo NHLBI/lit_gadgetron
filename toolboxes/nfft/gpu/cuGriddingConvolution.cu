@@ -15,7 +15,18 @@
 #include "ConvolverNC2C_standard.cuh"
 
 #define CUDA_CONV_MAX_COILS             (16)
-#define CUDA_CONV_THREADS_PER_KERNEL    (512)  // Optimized for Blackwell/Hopper (testing 512)
+#if defined(__CUDA_ARCH__)
+  #if __CUDA_ARCH__ >= 1200
+    // Optimized for Blackwell (compute capability 9.0+)
+    #define CUDA_CONV_THREADS_PER_KERNEL 512
+  #else
+    // Default for other architectures
+    #define CUDA_CONV_THREADS_PER_KERNEL 192
+  #endif
+#else
+  // Host code or unknown arch
+  #define CUDA_CONV_THREADS_PER_KERNEL 192
+#endif
 
 namespace Gadgetron
 {
@@ -316,7 +327,7 @@ namespace Gadgetron
         auto view_dims = to_std_vector(this->plan_.matrix_size_os_);
         view_dims.push_back(this->plan_.num_frames_);
         view_dims.push_back(0); // Placeholder for num_coils.
-
+        //GDEBUG_STREAM("domain_size_coils_desired = " << domain_size_coils_desired << " num_repetitions = " << num_repetitions);
         for (unsigned int repetition = 0; repetition < num_repetitions; repetition++)
         {
             // Number of coils in this repetition.
@@ -372,7 +383,7 @@ namespace Gadgetron
         REAL radius = this->plan_.kernel_.get_radius();
         transform(trajectory.begin(), trajectory.end(),
                   c_p_s.begin(), compute_num_cells_per_sample<REAL, D>(radius));
-        inclusive_scan(c_p_s.begin(), c_p_s.end(), c_p_s_ps.begin(),
+        thrust::inclusive_scan(c_p_s.begin(), c_p_s.end(), c_p_s_ps.begin(),
                        thrust::plus<unsigned int>()); // Prefix sum.
 
         // Build the vector of (grid_idx, sample_idx) tuples. Actually kept in
@@ -668,7 +679,8 @@ namespace Gadgetron
     {
         this->conv_matrix_ = std::make_unique<cuCsrMatrix<T>>(
             make_conv_matrix<T, D, K>(
-                trajectory, this->plan_.matrix_size_os_, this->plan_.d_kernel_));
+                trajectory, this->plan_.matrix_size_os_, this->plan_.d_kernel_,
+                this->plan_.kernel_.get_radius()));
     }
 
 

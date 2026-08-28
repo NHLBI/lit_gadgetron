@@ -66,6 +66,8 @@ set(gadgetron_nhlbi_gt_toolbox_config_files
     config/pulmonary_MOCOLR.xml
     config/cardiovascular_iMOCO.xml
     config/cardiopulmonary_recon.xml
+    config/imoco_recon_vds.xml
+    config/pulmonary_echo0.xml
 )
 
 

@@ -15,7 +15,8 @@ dependencies:
   - numpy=1.24.4
   - scipy=1.10.1
   - pyfftw=0.15.0
-  - h5py>=3.6,<3.8  # Must match conda HDF5 1.10.x
+  - hdf5>=1.14.3
+  - h5py=3.12.1  # Requires hdf5 >=1.14.3 (provided by ismrmrd=1.15.0)
   - pyyaml=6.0
   - jq=1.6
   - yq=2.13
@@ -52,27 +53,25 @@ dependencies:
 
   # Math and Signal Processing
   - fftw=3.3.9
-  - armadillo=9.900.5
+  - armadillo>=9.900
   - mkl>=2024.2.2,<2025.0a0
   - mkl-include>=2024.2.2,<2025.0a0
-  - libxml2=2.9
-  - libcurl=7.79.1
+  - libxml2>=2.9.14,<2.14
+  - libcurl>=7.79
   - plplot=5.15.0
-  - pugixml=1.12.1
-  - onnxruntime=1.10.0
+  - pugixml=1.15
+  - onnxruntime>=1.10
   - xsdata>=22.2
 
-  # Gadgetron + ISMRMRD
-  - ismrmrd::ismrmrd=1.13.7
-  - ismrmrd::ismrmrd-python>=1.9.8
-  - ismrmrd::siemens_to_ismrmrd=1.2.11
+  # Gadgetron + ISMRMRD (C libraries via conda; Python bindings via pip below)
+  - ismrmrd::ismrmrd=1.15.0
+  - ismrmrd::siemens_to_ismrmrd=1.2.13
   - ismrmrd::mrd-storage-server=0.0.12
-  - gadgetron::gadgetron-python=1.4.1
   - gadgetron::range-v3=0.11.0
 
   # Boost
   - boost=1.80.0
-  - icu=70.1
+  - icu>=70.1
 
   # Docs
   - sphinx=4.4.0
@@ -94,6 +93,10 @@ dependencies:
   - pynvjitlink
 
   - pip:
+      # ismrmrd and gadgetron Python bindings installed via pip
+      # (conda ismrmrd-python channel only has up to 1.14.2)
+      - ismrmrd==1.14.2
+      - gadgetron==1.4.1
       - nvidia-cuda-runtime-cu12==12.8.57  # Required for CuPy JIT compilation (must match PyTorch cu128 requirement)
       - sigpy
       - scikit-image
@@ -108,3 +111,7 @@ dependencies:
       - torchvision==0.22.0
       - torchaudio==2.7.0
       - onnxruntime-gpu
+      # NHLBI integration tests (Azure Blob Storage for private test data)
+      - azure-storage-blob
+      - azure-identity
+      - matplotlib
